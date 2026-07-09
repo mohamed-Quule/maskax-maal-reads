@@ -126,9 +126,14 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild size="sm" className="bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to="/auth">{t("nav_signin")}</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild size="sm" variant="ghost">
+                <Link to="/auth">{t("nav_signin")}</Link>
+              </Button>
+              <Button asChild size="sm" className="bg-brand text-brand-foreground hover:bg-brand/90">
+                <Link to="/register">{t("nav_signup")}</Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>
