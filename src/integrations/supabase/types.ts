@@ -91,6 +91,48 @@ export type Database = {
           },
         ]
       }
+      bookshops: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          owner_user_id: string | null
+          phone: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          owner_user_id?: string | null
+          phone?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_user_id?: string | null
+          phone?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           book_id: string
@@ -343,7 +385,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "superadmin" | "bookshop"
       order_status: "pending" | "confirmed" | "cancelled" | "delivered"
       payment_method: "evc_plus" | "zaad" | "sahal"
       payment_status: "pending" | "paid" | "failed" | "refunded"
@@ -474,7 +516,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "superadmin", "bookshop"],
       order_status: ["pending", "confirmed", "cancelled", "delivered"],
       payment_method: ["evc_plus", "zaad", "sahal"],
       payment_status: ["pending", "paid", "failed", "refunded"],

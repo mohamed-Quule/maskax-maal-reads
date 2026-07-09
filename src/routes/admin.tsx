@@ -1,15 +1,13 @@
 import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { BookOpen, LayoutDashboard, Library, ShoppingBag, Tag, Users, LogOut } from "lucide-react";
+import { BookOpen, LayoutDashboard, Library, ShoppingBag, Tag, Users, LogOut, Store } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
 function AdminLayout() {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, isAdmin, isSuperadmin, loading, signOut } = useAuth();
   const { lang } = useI18n();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -30,6 +28,9 @@ function AdminLayout() {
     { to: "/admin/categories", icon: Tag, label: lang === "en" ? "Categories" : "Qaybaha" },
     { to: "/admin/orders", icon: ShoppingBag, label: lang === "en" ? "Orders" : "Dalabyada" },
     { to: "/admin/users", icon: Users, label: lang === "en" ? "Users" : "Isticmaalayaal" },
+    ...(isSuperadmin
+      ? [{ to: "/admin/bookshops", icon: Store, label: lang === "en" ? "Bookshops" : "Maktabadaha" }]
+      : []),
   ];
 
   return (
