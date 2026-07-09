@@ -7,6 +7,7 @@ type AuthCtx = {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
+  isSuperadmin: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 };
@@ -16,6 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
   const qc = useQueryClient();
 
   useEffect(() => {
@@ -33,15 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session?.user) {
       setIsAdmin(false);
+      setIsSuperadmin(false);
       return;
     }
     supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", session.user.id)
-      .eq("role", "admin")
-      .maybeSingle()
-      .then(({ data }) => setIsAdmin(!!data));
+      .then(({ data }) => {
+        const roles = (data ?? []).map((r: any) => r.role);
+        setIsSuperadmin(roles.includes("superadmin"));
+        setIsAdmin(roles.includes("admin") || roles.includes("superadmin"));
+      });
   }, [session]);
 
   const signOut = async () => {
