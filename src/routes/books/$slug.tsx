@@ -134,7 +134,7 @@ function BookDetail() {
 
           <div className="mt-10 grid grid-cols-2 gap-4 rounded-lg border bg-paper p-4 text-sm sm:grid-cols-4">
             <Meta label={lang === "en" ? "Language" : "Luuqad"} value={book.language === "so" ? "Somali" : "English"} />
-            <Meta label={lang === "en" ? "Format" : "Qaab"} value="PDF + Reader" />
+            <Meta label={lang === "en" ? "Cover" : "Jaldi"} value={book.cover_type === "hard" ? (lang === "en" ? "Hard cover" : "Jaldi adag") : (lang === "en" ? "Soft cover" : "Jaldi jilicsan")} />
             <Meta label={lang === "en" ? "Payment" : "Lacag bixin"} value="EVC / Zaad / Sahal" />
             <Meta label={lang === "en" ? "Delivery" : "Gaarsiin"} value={lang === "en" ? "Instant" : "Deg deg"} />
           </div>
