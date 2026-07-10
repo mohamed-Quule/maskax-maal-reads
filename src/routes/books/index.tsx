@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { Search as SearchIcon } from "lucide-react";
 
-type SearchParams = { q?: string; cat?: string; sort?: string };
+type SearchParams = { q?: string; cat?: string; sort?: string; cover?: string };
 
 export const Route = createFileRoute("/books/")({
   component: BooksList,
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/books/")({
     q: typeof s.q === "string" ? s.q : undefined,
     cat: typeof s.cat === "string" ? s.cat : undefined,
     sort: typeof s.sort === "string" ? s.sort : "popular",
+    cover: s.cover === "hard" || s.cover === "soft" ? s.cover : undefined,
   }),
 });
 
