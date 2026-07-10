@@ -111,7 +111,18 @@ function BooksList() {
               {lang === "en" ? c.name_en : c.name_so}
             </Button>
           ))}
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <div className="inline-flex rounded-md border p-0.5 text-xs font-semibold">
+              <button onClick={() => nav({ search: (s: SearchParams) => ({ ...s, cover: undefined }) })} className={`rounded px-2.5 py-1 ${!cover ? "bg-brand text-brand-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "All" : "Dhammaan"}
+              </button>
+              <button onClick={() => nav({ search: (s: SearchParams) => ({ ...s, cover: "hard" }) })} className={`rounded px-2.5 py-1 ${cover === "hard" ? "bg-brand text-brand-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "Hard" : "Adag"}
+              </button>
+              <button onClick={() => nav({ search: (s: SearchParams) => ({ ...s, cover: "soft" }) })} className={`rounded px-2.5 py-1 ${cover === "soft" ? "bg-brand text-brand-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "Soft" : "Jilicsan"}
+              </button>
+            </div>
             <select
               value={sort}
               onChange={(e) => nav({ search: (s: SearchParams) => ({ ...s, sort: e.target.value }) })}
