@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { Search as SearchIcon } from "lucide-react";
 
-type SearchParams = { q?: string; cat?: string; sort?: string };
+type SearchParams = { q?: string; cat?: string; sort?: string; cover?: string };
 
 export const Route = createFileRoute("/books/")({
   component: BooksList,
@@ -18,11 +18,12 @@ export const Route = createFileRoute("/books/")({
     q: typeof s.q === "string" ? s.q : undefined,
     cat: typeof s.cat === "string" ? s.cat : undefined,
     sort: typeof s.sort === "string" ? s.sort : "popular",
+    cover: s.cover === "hard" || s.cover === "soft" ? s.cover : undefined,
   }),
 });
 
 function BooksList() {
-  const { q, cat, sort } = useSearch({ from: "/books/" });
+  const { q, cat, sort, cover } = useSearch({ from: "/books/" });
   const { lang, t } = useI18n();
   const [query, setQuery] = useState(q ?? "");
 
@@ -32,15 +33,16 @@ function BooksList() {
   });
 
   const { data: books = [], isLoading } = useQuery({
-    queryKey: ["books-list", q, cat, sort],
+    queryKey: ["books-list", q, cat, sort, cover],
     queryFn: async () => {
       let qb = supabase
         .from("books")
-        .select("id,slug,title,author,cover_url,price,rating_avg,category_id");
+        .select("id,slug,title,author,cover_url,cover_type,price,rating_avg,category_id");
       if (cat) {
         const c = (await supabase.from("categories").select("id").eq("slug", cat).maybeSingle()).data;
         if (c) qb = qb.eq("category_id", c.id);
       }
+      if (cover) qb = qb.eq("cover_type", cover);
       if (q) qb = qb.or(`title.ilike.%${q}%,author.ilike.%${q}%`);
       if (sort === "popular") qb = qb.order("sales_count", { ascending: false });
       else if (sort === "new") qb = qb.order("created_at", { ascending: false });
@@ -109,7 +111,18 @@ function BooksList() {
               {lang === "en" ? c.name_en : c.name_so}
             </Button>
           ))}
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <div className="inline-flex rounded-md border p-0.5 text-xs font-semibold">
+              <button onClick={() => nav({ search: (s: SearchParams) => ({ ...s, cover: undefined }) })} className={`rounded px-2.5 py-1 ${!cover ? "bg-brand text-brand-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "All" : "Dhammaan"}
+              </button>
+              <button onClick={() => nav({ search: (s: SearchParams) => ({ ...s, cover: "hard" }) })} className={`rounded px-2.5 py-1 ${cover === "hard" ? "bg-brand text-brand-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "Hard" : "Adag"}
+              </button>
+              <button onClick={() => nav({ search: (s: SearchParams) => ({ ...s, cover: "soft" }) })} className={`rounded px-2.5 py-1 ${cover === "soft" ? "bg-brand text-brand-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "Soft" : "Jilicsan"}
+              </button>
+            </div>
             <select
               value={sort}
               onChange={(e) => nav({ search: (s: SearchParams) => ({ ...s, sort: e.target.value }) })}

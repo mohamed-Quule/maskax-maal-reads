@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tan
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { BookOpen, LayoutDashboard, Library, ShoppingBag, Tag, Users, LogOut, Store } from "lucide-react";
+import { BookOpen, LayoutDashboard, Library, ShoppingBag, Tag, Users, LogOut, Store, BarChart3, Settings as SettingsIcon, Inbox } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
@@ -28,9 +28,14 @@ function AdminLayout() {
     { to: "/admin/categories", icon: Tag, label: lang === "en" ? "Categories" : "Qaybaha" },
     { to: "/admin/orders", icon: ShoppingBag, label: lang === "en" ? "Orders" : "Dalabyada" },
     { to: "/admin/users", icon: Users, label: lang === "en" ? "Users" : "Isticmaalayaal" },
+    { to: "/admin/reports", icon: BarChart3, label: lang === "en" ? "Reports" : "Warbixin" },
     ...(isSuperadmin
-      ? [{ to: "/admin/bookshops", icon: Store, label: lang === "en" ? "Bookshops" : "Maktabadaha" }]
+      ? [
+          { to: "/admin/bookshops", icon: Store, label: lang === "en" ? "Bookshops" : "Maktabadaha" },
+          { to: "/admin/applications", icon: Inbox, label: lang === "en" ? "Applications" : "Codsiyada" },
+        ]
       : []),
+    { to: "/admin/settings", icon: SettingsIcon, label: lang === "en" ? "Settings" : "Habaynta" },
   ];
 
   return (
@@ -42,7 +47,7 @@ function AdminLayout() {
           </div>
           <div>
             <div className="text-sm font-semibold">Maskax Maal</div>
-            <div className="text-[10px] uppercase tracking-widest text-white/50">Admin</div>
+            <div className="text-[10px] uppercase tracking-widest text-white/50">{isSuperadmin ? "Superadmin" : "Admin"}</div>
           </div>
         </div>
         <nav className="mt-4 space-y-1 px-3 text-sm">
