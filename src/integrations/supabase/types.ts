@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           author: string
           category_id: string | null
+          cover_type: string
           cover_url: string | null
           created_at: string
           description_en: string | null
@@ -40,6 +41,7 @@ export type Database = {
         Insert: {
           author: string
           category_id?: string | null
+          cover_type?: string
           cover_url?: string | null
           created_at?: string
           description_en?: string | null
@@ -62,6 +64,7 @@ export type Database = {
         Update: {
           author?: string
           category_id?: string | null
+          cover_type?: string
           cover_url?: string | null
           created_at?: string
           description_en?: string | null
@@ -90,6 +93,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bookshop_applications: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          owner_full_name: string
+          phone: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          owner_full_name: string
+          phone: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          owner_full_name?: string
+          phone?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       bookshops: {
         Row: {
