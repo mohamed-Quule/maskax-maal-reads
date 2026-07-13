@@ -121,19 +121,54 @@ function BookDetail() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button
-              size="lg"
-              onClick={() => addToCart.mutate()}
-              disabled={book.stock <= 0 || addToCart.isPending}
-              className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
-            >
-              <ShoppingCart className="mr-2 size-4" />
-              {t("add_to_cart")}
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/cart"><BookOpen className="mr-2 size-4" />{t("nav_cart")}</Link>
-            </Button>
+            {book.is_free && book.pdf_path ? (
+              <>
+                <Button
+                  size="lg"
+                  onClick={async () => {
+                    try {
+                      const { url } = await fetchPdf({ data: { bookId: book.id } });
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+                  }}
+                  className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
+                >
+                  <BookOpen className="mr-2 size-4" />
+                  {lang === "en" ? "Read now" : "Akhri hadda"}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const { url } = await fetchPdf({ data: { bookId: book.id } });
+                      const a = document.createElement("a");
+                      a.href = url; a.download = `${book.slug}.pdf`; a.rel = "noopener"; a.click();
+                    } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+                  }}
+                >
+                  <Download className="mr-2 size-4" />
+                  {lang === "en" ? "Download" : "Soo dejiso"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  onClick={() => addToCart.mutate()}
+                  disabled={book.stock <= 0 || addToCart.isPending}
+                  className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
+                >
+                  <ShoppingCart className="mr-2 size-4" />
+                  {t("add_to_cart")}
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/cart"><BookOpen className="mr-2 size-4" />{t("nav_cart")}</Link>
+                </Button>
+              </>
+            )}
           </div>
+
 
           <div className="mt-10 grid grid-cols-2 gap-4 rounded-lg border bg-paper p-4 text-sm sm:grid-cols-4">
             <Meta label={lang === "en" ? "Language" : "Luuqad"} value={book.language === "so" ? "Somali" : "English"} />
