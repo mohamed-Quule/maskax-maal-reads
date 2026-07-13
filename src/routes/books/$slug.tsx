@@ -119,9 +119,17 @@ function BookDetail() {
           </div>
           <p className="mt-6 max-w-2xl leading-relaxed text-foreground/80">{desc}</p>
 
-          <div className="mt-8 flex items-end gap-6">
-            <div className="font-display text-4xl font-semibold text-brand">{money(book.price)}</div>
+          <div className="mt-8 flex items-end gap-4">
+            <div className="font-display text-4xl font-semibold text-brand">
+              {book.is_free ? (lang === "en" ? "FREE" : "BILAASH") : money(book.price)}
+            </div>
+            {book.is_free && (
+              <span className="rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase text-emerald">
+                {lang === "en" ? "Open access" : "Furan"}
+              </span>
+            )}
           </div>
+
 
           <div className="mt-6 flex flex-wrap gap-3">
             {book.is_free && book.pdf_path ? (
