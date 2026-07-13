@@ -8,9 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { money, shortDate } from "@/lib/format";
-import { ShoppingCart, Star, BookOpen, ChevronLeft } from "lucide-react";
+import { ShoppingCart, Star, BookOpen, ChevronLeft, Download } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { getBookPdfUrl } from "@/lib/book-access.functions";
+
 
 export const Route = createFileRoute("/books/$slug")({ component: BookDetail });
 
