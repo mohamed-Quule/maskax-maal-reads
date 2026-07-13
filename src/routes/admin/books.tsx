@@ -279,6 +279,32 @@ function AdminBooks() {
                       <Textarea rows={2} value={form.description_so} onChange={(e) => setForm({ ...form, description_so: e.target.value })} />
                     </Field>
                   </div>
+                  <div className="sm:col-span-2 rounded-md border bg-muted/30 p-3">
+                    <Label className="mb-1.5 block text-xs">{lang === "en" ? "Book PDF (readable/downloadable)" : "PDF-ka buugga (la akhrisan/soo dejin karo)"}</Label>
+                    <input
+                      ref={pdfRef}
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdf(f); }}
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button type="button" variant="outline" size="sm" onClick={() => pdfRef.current?.click()} disabled={uploadingPdf}>
+                        {uploadingPdf ? <Loader2 className="mr-1 size-4 animate-spin" /> : <Upload className="mr-1 size-4" />}
+                        {form.pdf_path ? (lang === "en" ? "Replace PDF" : "Bedel PDF") : (lang === "en" ? "Upload PDF" : "Soo geli PDF")}
+                      </Button>
+                      {form.pdf_path && <span className="text-xs text-muted-foreground truncate max-w-xs">{form.pdf_path}</span>}
+                      {form.pdf_path && (
+                        <button type="button" onClick={() => setForm({ ...form, pdf_path: "" })} className="text-xs text-destructive hover:underline">
+                          {lang === "en" ? "Remove" : "Ka saar"}
+                        </button>
+                      )}
+                    </div>
+                    <label className="mt-3 flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={form.is_free} onChange={(e) => setForm({ ...form, is_free: e.target.checked })} />
+                      <span>{lang === "en" ? "Free — anyone can read & download" : "Bilaash — qof kastaa wuu akhrisan/soo dejisan karaa"}</span>
+                    </label>
+                  </div>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} />
                     Featured
@@ -287,6 +313,7 @@ function AdminBooks() {
                     <input type="checkbox" checked={form.is_editor_pick} onChange={(e) => setForm({ ...form, is_editor_pick: e.target.checked })} />
                     Editor's pick
                   </label>
+
                 </div>
               </div>
 
