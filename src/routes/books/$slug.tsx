@@ -22,6 +22,9 @@ function BookDetail() {
   const { lang, t } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const fetchPdf = useServerFn(getBookPdfUrl);
+
+
 
   const { data: book, isLoading } = useQuery({
     queryKey: ["book", slug],
