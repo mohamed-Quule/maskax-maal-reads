@@ -92,6 +92,26 @@ function AdminBooks() {
     }
   };
 
+  const uploadPdf = async (file: File) => {
+    setUploadingPdf(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "pdf";
+      const path = `pdfs/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("book-pdfs").upload(path, file, {
+        cacheControl: "31536000",
+        upsert: false,
+        contentType: file.type || "application/pdf",
+      });
+      if (upErr) throw upErr;
+      setForm((f) => ({ ...f, pdf_path: path }));
+      toast.success(lang === "en" ? "PDF uploaded" : "PDF-kii waa la soo geliyay");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploadingPdf(false);
+    }
+  };
+
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
@@ -104,6 +124,8 @@ function AdminBooks() {
         category_id: form.category_id || null,
         cover_url: form.cover_url || null,
         cover_type: form.cover_type,
+        pdf_path: form.pdf_path || null,
+        is_free: form.is_free,
         description_en: form.description_en || null,
         description_so: form.description_so || null,
         is_featured: form.is_featured,
@@ -144,11 +166,13 @@ function AdminBooks() {
       language: b.language, price: String(b.price), stock: String(b.stock),
       category_id: b.category_id ?? "", cover_url: b.cover_url ?? "",
       cover_type: (b.cover_type ?? "soft") as "hard" | "soft",
+      pdf_path: b.pdf_path ?? "", is_free: !!b.is_free,
       description_en: b.description_en ?? "", description_so: b.description_so ?? "",
       is_featured: b.is_featured, is_editor_pick: b.is_editor_pick,
     });
     setOpen(true);
   };
+
 
   return (
     <div className="p-8">
