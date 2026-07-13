@@ -50,7 +50,10 @@ function AdminBooks() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<BookForm>(empty);
   const [uploading, setUploading] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pdfRef = useRef<HTMLInputElement>(null);
+
 
   const { data: books = [] } = useQuery({
     queryKey: ["admin-books", q, coverFilter],
