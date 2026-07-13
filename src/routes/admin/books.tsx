@@ -25,6 +25,8 @@ type BookForm = {
   category_id: string;
   cover_url: string;
   cover_type: "hard" | "soft";
+  pdf_path: string;
+  is_free: boolean;
   description_en: string;
   description_so: string;
   is_featured: boolean;
@@ -34,9 +36,11 @@ type BookForm = {
 const empty: BookForm = {
   slug: "", title: "", author: "", language: "so", price: "10", stock: "10",
   category_id: "", cover_url: "", cover_type: "soft",
+  pdf_path: "", is_free: false,
   description_en: "", description_so: "",
   is_featured: false, is_editor_pick: false,
 };
+
 
 function AdminBooks() {
   const { lang } = useI18n();
