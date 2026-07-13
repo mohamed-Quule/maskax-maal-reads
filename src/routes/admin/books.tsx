@@ -25,6 +25,8 @@ type BookForm = {
   category_id: string;
   cover_url: string;
   cover_type: "hard" | "soft";
+  pdf_path: string;
+  is_free: boolean;
   description_en: string;
   description_so: string;
   is_featured: boolean;
@@ -34,9 +36,11 @@ type BookForm = {
 const empty: BookForm = {
   slug: "", title: "", author: "", language: "so", price: "10", stock: "10",
   category_id: "", cover_url: "", cover_type: "soft",
+  pdf_path: "", is_free: false,
   description_en: "", description_so: "",
   is_featured: false, is_editor_pick: false,
 };
+
 
 function AdminBooks() {
   const { lang } = useI18n();
@@ -46,7 +50,10 @@ function AdminBooks() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<BookForm>(empty);
   const [uploading, setUploading] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const pdfRef = useRef<HTMLInputElement>(null);
+
 
   const { data: books = [] } = useQuery({
     queryKey: ["admin-books", q, coverFilter],
@@ -85,6 +92,26 @@ function AdminBooks() {
     }
   };
 
+  const uploadPdf = async (file: File) => {
+    setUploadingPdf(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "pdf";
+      const path = `pdfs/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("book-pdfs").upload(path, file, {
+        cacheControl: "31536000",
+        upsert: false,
+        contentType: file.type || "application/pdf",
+      });
+      if (upErr) throw upErr;
+      setForm((f) => ({ ...f, pdf_path: path }));
+      toast.success(lang === "en" ? "PDF uploaded" : "PDF-kii waa la soo geliyay");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploadingPdf(false);
+    }
+  };
+
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
@@ -97,6 +124,8 @@ function AdminBooks() {
         category_id: form.category_id || null,
         cover_url: form.cover_url || null,
         cover_type: form.cover_type,
+        pdf_path: form.pdf_path || null,
+        is_free: form.is_free,
         description_en: form.description_en || null,
         description_so: form.description_so || null,
         is_featured: form.is_featured,
@@ -137,11 +166,13 @@ function AdminBooks() {
       language: b.language, price: String(b.price), stock: String(b.stock),
       category_id: b.category_id ?? "", cover_url: b.cover_url ?? "",
       cover_type: (b.cover_type ?? "soft") as "hard" | "soft",
+      pdf_path: b.pdf_path ?? "", is_free: !!b.is_free,
       description_en: b.description_en ?? "", description_so: b.description_so ?? "",
       is_featured: b.is_featured, is_editor_pick: b.is_editor_pick,
     });
     setOpen(true);
   };
+
 
   return (
     <div className="p-8">
@@ -248,6 +279,32 @@ function AdminBooks() {
                       <Textarea rows={2} value={form.description_so} onChange={(e) => setForm({ ...form, description_so: e.target.value })} />
                     </Field>
                   </div>
+                  <div className="sm:col-span-2 rounded-md border bg-muted/30 p-3">
+                    <Label className="mb-1.5 block text-xs">{lang === "en" ? "Book PDF (readable/downloadable)" : "PDF-ka buugga (la akhrisan/soo dejin karo)"}</Label>
+                    <input
+                      ref={pdfRef}
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPdf(f); }}
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button type="button" variant="outline" size="sm" onClick={() => pdfRef.current?.click()} disabled={uploadingPdf}>
+                        {uploadingPdf ? <Loader2 className="mr-1 size-4 animate-spin" /> : <Upload className="mr-1 size-4" />}
+                        {form.pdf_path ? (lang === "en" ? "Replace PDF" : "Bedel PDF") : (lang === "en" ? "Upload PDF" : "Soo geli PDF")}
+                      </Button>
+                      {form.pdf_path && <span className="text-xs text-muted-foreground truncate max-w-xs">{form.pdf_path}</span>}
+                      {form.pdf_path && (
+                        <button type="button" onClick={() => setForm({ ...form, pdf_path: "" })} className="text-xs text-destructive hover:underline">
+                          {lang === "en" ? "Remove" : "Ka saar"}
+                        </button>
+                      )}
+                    </div>
+                    <label className="mt-3 flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={form.is_free} onChange={(e) => setForm({ ...form, is_free: e.target.checked })} />
+                      <span>{lang === "en" ? "Free — anyone can read & download" : "Bilaash — qof kastaa wuu akhrisan/soo dejisan karaa"}</span>
+                    </label>
+                  </div>
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} />
                     Featured
@@ -256,6 +313,7 @@ function AdminBooks() {
                     <input type="checkbox" checked={form.is_editor_pick} onChange={(e) => setForm({ ...form, is_editor_pick: e.target.checked })} />
                     Editor's pick
                   </label>
+
                 </div>
               </div>
 

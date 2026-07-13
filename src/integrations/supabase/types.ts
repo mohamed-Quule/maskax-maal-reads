@@ -26,6 +26,7 @@ export type Database = {
           id: string
           is_editor_pick: boolean
           is_featured: boolean
+          is_free: boolean
           is_published: boolean
           language: string
           pdf_path: string | null
@@ -49,6 +50,7 @@ export type Database = {
           id?: string
           is_editor_pick?: boolean
           is_featured?: boolean
+          is_free?: boolean
           is_published?: boolean
           language?: string
           pdf_path?: string | null
@@ -72,6 +74,7 @@ export type Database = {
           id?: string
           is_editor_pick?: boolean
           is_featured?: boolean
+          is_free?: boolean
           is_published?: boolean
           language?: string
           pdf_path?: string | null

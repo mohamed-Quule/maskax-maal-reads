@@ -8,9 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { money, shortDate } from "@/lib/format";
-import { ShoppingCart, Star, BookOpen, ChevronLeft } from "lucide-react";
+import { ShoppingCart, Star, BookOpen, ChevronLeft, Download } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { getBookPdfUrl } from "@/lib/book-access.functions";
+
 
 export const Route = createFileRoute("/books/$slug")({ component: BookDetail });
 
@@ -19,6 +22,9 @@ function BookDetail() {
   const { lang, t } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const fetchPdf = useServerFn(getBookPdfUrl);
+
+
 
   const { data: book, isLoading } = useQuery({
     queryKey: ["book", slug],
@@ -113,24 +119,67 @@ function BookDetail() {
           </div>
           <p className="mt-6 max-w-2xl leading-relaxed text-foreground/80">{desc}</p>
 
-          <div className="mt-8 flex items-end gap-6">
-            <div className="font-display text-4xl font-semibold text-brand">{money(book.price)}</div>
+          <div className="mt-8 flex items-end gap-4">
+            <div className="font-display text-4xl font-semibold text-brand">
+              {book.is_free ? (lang === "en" ? "FREE" : "BILAASH") : money(book.price)}
+            </div>
+            {book.is_free && (
+              <span className="rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase text-emerald">
+                {lang === "en" ? "Open access" : "Furan"}
+              </span>
+            )}
           </div>
 
+
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button
-              size="lg"
-              onClick={() => addToCart.mutate()}
-              disabled={book.stock <= 0 || addToCart.isPending}
-              className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
-            >
-              <ShoppingCart className="mr-2 size-4" />
-              {t("add_to_cart")}
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/cart"><BookOpen className="mr-2 size-4" />{t("nav_cart")}</Link>
-            </Button>
+            {book.is_free && book.pdf_path ? (
+              <>
+                <Button
+                  size="lg"
+                  onClick={async () => {
+                    try {
+                      const { url } = await fetchPdf({ data: { bookId: book.id } });
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+                  }}
+                  className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
+                >
+                  <BookOpen className="mr-2 size-4" />
+                  {lang === "en" ? "Read now" : "Akhri hadda"}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const { url } = await fetchPdf({ data: { bookId: book.id } });
+                      const a = document.createElement("a");
+                      a.href = url; a.download = `${book.slug}.pdf`; a.rel = "noopener"; a.click();
+                    } catch (e: any) { toast.error(e?.message ?? "Failed"); }
+                  }}
+                >
+                  <Download className="mr-2 size-4" />
+                  {lang === "en" ? "Download" : "Soo dejiso"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  onClick={() => addToCart.mutate()}
+                  disabled={book.stock <= 0 || addToCart.isPending}
+                  className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
+                >
+                  <ShoppingCart className="mr-2 size-4" />
+                  {t("add_to_cart")}
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/cart"><BookOpen className="mr-2 size-4" />{t("nav_cart")}</Link>
+                </Button>
+              </>
+            )}
           </div>
+
 
           <div className="mt-10 grid grid-cols-2 gap-4 rounded-lg border bg-paper p-4 text-sm sm:grid-cols-4">
             <Meta label={lang === "en" ? "Language" : "Luuqad"} value={book.language === "so" ? "Somali" : "English"} />
