@@ -12,7 +12,7 @@ import { ShoppingCart, Star, BookOpen, ChevronLeft, Download } from "lucide-reac
 import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { getBookPdfUrl } from "@/lib/book-access.functions";
+import { getBookReadUrl, getBookDownloadUrl, getFreeBookUrl } from "@/lib/library.functions";
 
 
 export const Route = createFileRoute("/books/$slug")({ component: BookDetail });
@@ -22,7 +22,9 @@ function BookDetail() {
   const { lang, t } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const fetchPdf = useServerFn(getBookPdfUrl);
+  const readFn = useServerFn(getBookReadUrl);
+  const downloadFn = useServerFn(getBookDownloadUrl);
+  const freeFn = useServerFn(getFreeBookUrl);
 
 
 
@@ -53,6 +55,21 @@ function BookDetail() {
     enabled: !!book?.id,
   });
 
+
+  const { data: owned = false } = useQuery({
+    queryKey: ["library-owns", user?.id, book?.id],
+    queryFn: async () => {
+      if (!user || !book?.id) return false;
+      const { data } = await supabase
+        .from("library")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("book_id", book.id)
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user && !!book?.id,
+  });
 
   const addToCart = useMutation({
     mutationFn: async () => {
