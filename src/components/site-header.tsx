@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, ShoppingCart, User, LogOut, Search, Shield, Menu, X, UserPlus, Store } from "lucide-react";
+import { BookOpen, ShoppingCart, User, LogOut, Search, Shield, Menu, X, Library } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -17,7 +17,7 @@ import {
 
 export function SiteHeader() {
   const { t, lang, setLang } = useI18n();
-  const { user, isAdmin, isSuperadmin, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -94,11 +94,13 @@ export function SiteHeader() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">
                   {user.email}
-                  {isSuperadmin && <div className="mt-0.5 text-[10px] font-bold uppercase text-emerald">Superadmin</div>}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/account"><User className="mr-2 size-4" />{t("nav_account")}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/account/library"><Library className="mr-2 size-4" />{lang === "en" ? "My library" : "Maktabaddayda"}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/account/orders"><ShoppingCart className="mr-2 size-4" />{t("nav_orders")}</Link>
@@ -119,21 +121,9 @@ export function SiteHeader() {
               <Button asChild size="sm" variant="ghost">
                 <Link to="/auth">{t("nav_signin")}</Link>
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" className="bg-brand text-brand-foreground hover:bg-brand/90">
-                    {t("nav_signup")}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link to="/register/user"><UserPlus className="mr-2 size-4" />{lang === "en" ? "As a reader" : "Sida akhriye"}</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/register/library"><Store className="mr-2 size-4" />{lang === "en" ? "As a bookshop" : "Sida maktabadda"}</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button asChild size="sm" className="bg-brand text-brand-foreground hover:bg-brand/90">
+                <Link to="/auth">{t("nav_signup")}</Link>
+              </Button>
             </div>
           )}
 
@@ -158,12 +148,7 @@ export function SiteHeader() {
               <>
                 <div className="my-2 border-t" />
                 <Link to="/auth" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">{t("nav_signin")}</Link>
-                <Link to="/register/user" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">
-                  {lang === "en" ? "Sign up as reader" : "Iska diiwaan geli sida akhriye"}
-                </Link>
-                <Link to="/register/library" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">
-                  {lang === "en" ? "Register bookshop" : "Diiwaan geli maktabad"}
-                </Link>
+                <Link to="/auth" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">{t("nav_signup")}</Link>
               </>
             )}
             <div className="my-2 flex gap-2 border-t pt-3">
