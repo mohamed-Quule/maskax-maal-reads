@@ -149,13 +149,14 @@ function BookDetail() {
 
 
           <div className="mt-6 flex flex-wrap gap-3">
-            {book.is_free && book.pdf_path ? (
+            {(owned || book.is_free) && book.pdf_path ? (
               <>
                 <Button
                   size="lg"
                   onClick={async () => {
                     try {
-                      const { url } = await fetchPdf({ data: { bookId: book.id } });
+                      const fn = owned ? readFn : freeFn;
+                      const { url } = await fn({ data: { bookId: book.id } });
                       window.open(url, "_blank", "noopener,noreferrer");
                     } catch (e: any) { toast.error(e?.message ?? "Failed"); }
                   }}
@@ -169,22 +170,28 @@ function BookDetail() {
                   variant="outline"
                   onClick={async () => {
                     try {
-                      const { url } = await fetchPdf({ data: { bookId: book.id } });
+                      const fn = owned ? downloadFn : freeFn;
+                      const { url } = await fn({ data: { bookId: book.id } });
                       const a = document.createElement("a");
                       a.href = url; a.download = `${book.slug}.pdf`; a.rel = "noopener"; a.click();
                     } catch (e: any) { toast.error(e?.message ?? "Failed"); }
                   }}
                 >
                   <Download className="mr-2 size-4" />
-                  {lang === "en" ? "Download" : "Soo dejiso"}
+                  {lang === "en" ? "Download PDF" : "Soo dejiso"}
                 </Button>
+                {owned && (
+                  <span className="inline-flex items-center rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase text-emerald">
+                    {lang === "en" ? "In your library" : "Maktabaddaada"}
+                  </span>
+                )}
               </>
             ) : (
               <>
                 <Button
                   size="lg"
                   onClick={() => addToCart.mutate()}
-                  disabled={book.stock <= 0 || addToCart.isPending}
+                  disabled={addToCart.isPending}
                   className="bg-emerald text-emerald-foreground hover:bg-emerald/90"
                 >
                   <ShoppingCart className="mr-2 size-4" />
@@ -196,6 +203,7 @@ function BookDetail() {
               </>
             )}
           </div>
+
 
 
           <div className="mt-10 grid grid-cols-2 gap-4 rounded-lg border bg-paper p-4 text-sm sm:grid-cols-4">
