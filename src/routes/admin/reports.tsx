@@ -10,7 +10,7 @@ import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContai
 export const Route = createFileRoute("/admin/reports")({ component: AdminReports });
 
 function AdminReports() {
-  const { isAdmin, isSuperadmin } = useAuth();
+  const { isAdmin } = useAuth();
   const { lang } = useI18n();
 
   const { data } = useQuery({
@@ -70,7 +70,6 @@ function AdminReports() {
             {lang === "en" ? "Track platform performance and top titles." : "La soco waxqabadka shabakadda iyo buugaagta ugu iibsanaya."}
           </p>
         </div>
-        {isSuperadmin && <span className="rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald">Superadmin</span>}
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-4">
