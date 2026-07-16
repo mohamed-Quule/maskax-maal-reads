@@ -9,8 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SuperadminSetupRouteImport } from './routes/superadmin-setup'
-import { Route as RegisterRouteImport } from './routes/register'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -20,31 +18,20 @@ import { Route as CategoriesIndexRouteImport } from './routes/categories/index'
 import { Route as BooksIndexRouteImport } from './routes/books/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
-import { Route as RegisterUserRouteImport } from './routes/register.user'
-import { Route as RegisterLibraryRouteImport } from './routes/register.library'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
 import { Route as BooksSlugRouteImport } from './routes/books/$slug'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminProfileRouteImport } from './routes/admin/profile'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
+import { Route as AdminInventoryRouteImport } from './routes/admin/inventory'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
-import { Route as AdminBookshopsRouteImport } from './routes/admin/bookshops'
 import { Route as AdminBooksRouteImport } from './routes/admin/books'
-import { Route as AdminApplicationsRouteImport } from './routes/admin/applications'
+import { Route as AccountLibraryRouteImport } from './routes/account/library'
 import { Route as AccountOrdersIndexRouteImport } from './routes/account/orders/index'
 import { Route as AccountOrdersIdRouteImport } from './routes/account/orders/$id'
 
-const SuperadminSetupRoute = SuperadminSetupRouteImport.update({
-  id: '/superadmin-setup',
-  path: '/superadmin-setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -90,16 +77,6 @@ const AccountIndexRoute = AccountIndexRouteImport.update({
   path: '/account/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RegisterUserRoute = RegisterUserRouteImport.update({
-  id: '/user',
-  path: '/user',
-  getParentRoute: () => RegisterRoute,
-} as any)
-const RegisterLibraryRoute = RegisterLibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => RegisterRoute,
-} as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/categories/$slug',
   path: '/categories/$slug',
@@ -125,9 +102,19 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminInventoryRoute = AdminInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
@@ -135,20 +122,15 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminBookshopsRoute = AdminBookshopsRouteImport.update({
-  id: '/bookshops',
-  path: '/bookshops',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminBooksRoute = AdminBooksRouteImport.update({
   id: '/books',
   path: '/books',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
-  id: '/applications',
-  path: '/applications',
-  getParentRoute: () => AdminRoute,
+const AccountLibraryRoute = AccountLibraryRouteImport.update({
+  id: '/account/library',
+  path: '/account/library',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AccountOrdersIndexRoute = AccountOrdersIndexRouteImport.update({
   id: '/account/orders/',
@@ -167,20 +149,17 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
-  '/register': typeof RegisterRouteWithChildren
-  '/superadmin-setup': typeof SuperadminSetupRoute
-  '/admin/applications': typeof AdminApplicationsRoute
+  '/account/library': typeof AccountLibraryRoute
   '/admin/books': typeof AdminBooksRoute
-  '/admin/bookshops': typeof AdminBookshopsRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/books/$slug': typeof BooksSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
-  '/register/library': typeof RegisterLibraryRoute
-  '/register/user': typeof RegisterUserRoute
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/books/': typeof BooksIndexRoute
@@ -193,20 +172,17 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
-  '/register': typeof RegisterRouteWithChildren
-  '/superadmin-setup': typeof SuperadminSetupRoute
-  '/admin/applications': typeof AdminApplicationsRoute
+  '/account/library': typeof AccountLibraryRoute
   '/admin/books': typeof AdminBooksRoute
-  '/admin/bookshops': typeof AdminBookshopsRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/books/$slug': typeof BooksSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
-  '/register/library': typeof RegisterLibraryRoute
-  '/register/user': typeof RegisterUserRoute
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/books': typeof BooksIndexRoute
@@ -221,20 +197,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
-  '/register': typeof RegisterRouteWithChildren
-  '/superadmin-setup': typeof SuperadminSetupRoute
-  '/admin/applications': typeof AdminApplicationsRoute
+  '/account/library': typeof AccountLibraryRoute
   '/admin/books': typeof AdminBooksRoute
-  '/admin/bookshops': typeof AdminBookshopsRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/books/$slug': typeof BooksSlugRoute
   '/categories/$slug': typeof CategoriesSlugRoute
-  '/register/library': typeof RegisterLibraryRoute
-  '/register/user': typeof RegisterUserRoute
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/books/': typeof BooksIndexRoute
@@ -250,20 +223,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
-    | '/register'
-    | '/superadmin-setup'
-    | '/admin/applications'
+    | '/account/library'
     | '/admin/books'
-    | '/admin/bookshops'
     | '/admin/categories'
+    | '/admin/inventory'
     | '/admin/orders'
+    | '/admin/profile'
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
     | '/books/$slug'
     | '/categories/$slug'
-    | '/register/library'
-    | '/register/user'
     | '/account/'
     | '/admin/'
     | '/books/'
@@ -276,20 +246,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
-    | '/register'
-    | '/superadmin-setup'
-    | '/admin/applications'
+    | '/account/library'
     | '/admin/books'
-    | '/admin/bookshops'
     | '/admin/categories'
+    | '/admin/inventory'
     | '/admin/orders'
+    | '/admin/profile'
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
     | '/books/$slug'
     | '/categories/$slug'
-    | '/register/library'
-    | '/register/user'
     | '/account'
     | '/admin'
     | '/books'
@@ -303,20 +270,17 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
-    | '/register'
-    | '/superadmin-setup'
-    | '/admin/applications'
+    | '/account/library'
     | '/admin/books'
-    | '/admin/bookshops'
     | '/admin/categories'
+    | '/admin/inventory'
     | '/admin/orders'
+    | '/admin/profile'
     | '/admin/reports'
     | '/admin/settings'
     | '/admin/users'
     | '/books/$slug'
     | '/categories/$slug'
-    | '/register/library'
-    | '/register/user'
     | '/account/'
     | '/admin/'
     | '/books/'
@@ -331,8 +295,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
-  RegisterRoute: typeof RegisterRouteWithChildren
-  SuperadminSetupRoute: typeof SuperadminSetupRoute
+  AccountLibraryRoute: typeof AccountLibraryRoute
   BooksSlugRoute: typeof BooksSlugRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   AccountIndexRoute: typeof AccountIndexRoute
@@ -344,20 +307,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/superadmin-setup': {
-      id: '/superadmin-setup'
-      path: '/superadmin-setup'
-      fullPath: '/superadmin-setup'
-      preLoaderRoute: typeof SuperadminSetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -421,20 +370,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/register/user': {
-      id: '/register/user'
-      path: '/user'
-      fullPath: '/register/user'
-      preLoaderRoute: typeof RegisterUserRouteImport
-      parentRoute: typeof RegisterRoute
-    }
-    '/register/library': {
-      id: '/register/library'
-      path: '/library'
-      fullPath: '/register/library'
-      preLoaderRoute: typeof RegisterLibraryRouteImport
-      parentRoute: typeof RegisterRoute
-    }
     '/categories/$slug': {
       id: '/categories/$slug'
       path: '/categories/$slug'
@@ -470,11 +405,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
       fullPath: '/admin/orders'
       preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/inventory': {
+      id: '/admin/inventory'
+      path: '/inventory'
+      fullPath: '/admin/inventory'
+      preLoaderRoute: typeof AdminInventoryRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/categories': {
@@ -484,13 +433,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/bookshops': {
-      id: '/admin/bookshops'
-      path: '/bookshops'
-      fullPath: '/admin/bookshops'
-      preLoaderRoute: typeof AdminBookshopsRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/books': {
       id: '/admin/books'
       path: '/books'
@@ -498,12 +440,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBooksRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/applications': {
-      id: '/admin/applications'
-      path: '/applications'
-      fullPath: '/admin/applications'
-      preLoaderRoute: typeof AdminApplicationsRouteImport
-      parentRoute: typeof AdminRoute
+    '/account/library': {
+      id: '/account/library'
+      path: '/account/library'
+      fullPath: '/account/library'
+      preLoaderRoute: typeof AccountLibraryRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/account/orders/': {
       id: '/account/orders/'
@@ -523,11 +465,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
-  AdminApplicationsRoute: typeof AdminApplicationsRoute
   AdminBooksRoute: typeof AdminBooksRoute
-  AdminBookshopsRoute: typeof AdminBookshopsRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminInventoryRoute: typeof AdminInventoryRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProfileRoute: typeof AdminProfileRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -535,11 +477,11 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminApplicationsRoute: AdminApplicationsRoute,
   AdminBooksRoute: AdminBooksRoute,
-  AdminBookshopsRoute: AdminBookshopsRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminInventoryRoute: AdminInventoryRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminProfileRoute: AdminProfileRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
@@ -548,28 +490,13 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface RegisterRouteChildren {
-  RegisterLibraryRoute: typeof RegisterLibraryRoute
-  RegisterUserRoute: typeof RegisterUserRoute
-}
-
-const RegisterRouteChildren: RegisterRouteChildren = {
-  RegisterLibraryRoute: RegisterLibraryRoute,
-  RegisterUserRoute: RegisterUserRoute,
-}
-
-const RegisterRouteWithChildren = RegisterRoute._addFileChildren(
-  RegisterRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
-  RegisterRoute: RegisterRouteWithChildren,
-  SuperadminSetupRoute: SuperadminSetupRoute,
+  AccountLibraryRoute: AccountLibraryRoute,
   BooksSlugRoute: BooksSlugRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   AccountIndexRoute: AccountIndexRoute,
@@ -581,13 +508,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

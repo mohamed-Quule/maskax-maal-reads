@@ -7,7 +7,6 @@ type AuthCtx = {
   session: Session | null;
   user: User | null;
   isAdmin: boolean;
-  isSuperadmin: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 };
@@ -17,7 +16,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isSuperadmin, setIsSuperadmin] = useState(false);
   const qc = useQueryClient();
 
   useEffect(() => {
@@ -35,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session?.user) {
       setIsAdmin(false);
-      setIsSuperadmin(false);
       return;
     }
     supabase
@@ -44,8 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq("user_id", session.user.id)
       .then(({ data }) => {
         const roles = (data ?? []).map((r: any) => r.role);
-        setIsSuperadmin(roles.includes("superadmin"));
-        setIsAdmin(roles.includes("admin") || roles.includes("superadmin"));
+        setIsAdmin(roles.includes("admin"));
       });
   }, [session]);
 
@@ -56,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <Ctx.Provider value={{ session, user: session?.user ?? null, isAdmin, isSuperadmin, loading, signOut }}>
+    <Ctx.Provider value={{ session, user: session?.user ?? null, isAdmin, loading, signOut }}>
       {children}
     </Ctx.Provider>
   );

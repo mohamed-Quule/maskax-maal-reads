@@ -1,20 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformStats } from "@/lib/superadmin.functions";
 import { useI18n } from "@/lib/i18n";
-import { useAuth } from "@/lib/auth";
 import { money } from "@/lib/format";
-import { BookOpen, DollarSign, ShoppingBag, Users, Store, ShieldCheck, Inbox } from "lucide-react";
+import { BookOpen, DollarSign, ShoppingBag, Users, TrendingUp, Trophy } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
 function AdminDashboard() {
   const { lang } = useI18n();
-  const { isSuperadmin } = useAuth();
-  const statsFn = useServerFn(getPlatformStats);
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
@@ -23,10 +18,21 @@ function AdminDashboard() {
         supabase.from("books").select("*", { count: "exact", head: true }),
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("orders").select("*", { count: "exact", head: true }),
-        supabase.from("orders").select("total, created_at, payment_status").order("created_at", { ascending: false }).limit(200),
+        supabase.from("orders").select("total, created_at, payment_status").order("created_at", { ascending: false }).limit(500),
       ]);
       const paid = (orders.data ?? []).filter((o: any) => o.payment_status === "paid");
       const revenue = paid.reduce((s: number, o: any) => s + Number(o.total), 0);
+      const now = new Date();
+      const monthRevenue = paid
+        .filter((o: any) => {
+          const d = new Date(o.created_at);
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        })
+        .reduce((s: number, o: any) => s + Number(o.total), 0);
+      const monthSales = paid.filter((o: any) => {
+        const d = new Date(o.created_at);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).length;
       const byDay = new Map<string, number>();
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -41,26 +47,28 @@ function AdminDashboard() {
         date: new Date(date).toLocaleDateString(undefined, { weekday: "short" }),
         total,
       }));
-      return { books: booksCount ?? 0, users: usersCount ?? 0, orders: ordersCount ?? 0, revenue, chart };
+      return {
+        books: booksCount ?? 0,
+        users: usersCount ?? 0,
+        orders: ordersCount ?? 0,
+        revenue,
+        monthRevenue,
+        monthSales,
+        chart,
+      };
     },
   });
 
-  const { data: platform } = useQuery({
-    queryKey: ["platform-stats"],
-    queryFn: () => statsFn(),
-    enabled: isSuperadmin,
-  });
-
-  const { data: pendingApps = 0 } = useQuery({
-    queryKey: ["pending-applications"],
+  const { data: topBooks = [] } = useQuery({
+    queryKey: ["admin-top-books"],
     queryFn: async () => {
-      const { count } = await supabase
-        .from("bookshop_applications")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
-      return count ?? 0;
+      const { data } = await supabase
+        .from("books")
+        .select("id, title, author, cover_url, sales_count, price")
+        .order("sales_count", { ascending: false })
+        .limit(5);
+      return data ?? [];
     },
-    enabled: isSuperadmin,
   });
 
   const { data: recent = [] } = useQuery({
@@ -77,48 +85,21 @@ function AdminDashboard() {
 
   return (
     <div className="p-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">{lang === "en" ? "Dashboard" : "Dashboarka"}</h1>
-          <p className="text-sm text-muted-foreground">
-            {lang === "en" ? "Real-time overview of your platform." : "Aragti guud oo shabakadda."}
-          </p>
-        </div>
-        {isSuperadmin && (
-          <span className="rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald">
-            Superadmin
-          </span>
-        )}
+      <div>
+        <h1 className="font-display text-3xl">{lang === "en" ? "Dashboard" : "Dashboarka"}</h1>
+        <p className="text-sm text-muted-foreground">
+          {lang === "en" ? "Real-time overview of your bookstore." : "Aragti guud oo maktabaddaada."}
+        </p>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={DollarSign} label={lang === "en" ? "Revenue" : "Dakhli"} value={money(stats?.revenue ?? 0)} accent="emerald" />
+        <StatCard icon={DollarSign} label={lang === "en" ? "Revenue (all)" : "Dakhli"} value={money(stats?.revenue ?? 0)} accent="emerald" />
+        <StatCard icon={TrendingUp} label={lang === "en" ? "Revenue (month)" : "Dakhliga bishaan"} value={money(stats?.monthRevenue ?? 0)} accent="emerald" />
+        <StatCard icon={ShoppingBag} label={lang === "en" ? "Sales (month)" : "Iibka bishaan"} value={String(stats?.monthSales ?? 0)} />
         <StatCard icon={ShoppingBag} label={lang === "en" ? "Orders" : "Dalabyada"} value={String(stats?.orders ?? 0)} />
         <StatCard icon={BookOpen} label={lang === "en" ? "Books" : "Buugaag"} value={String(stats?.books ?? 0)} />
         <StatCard icon={Users} label={lang === "en" ? "Users" : "Isticmaalayaal"} value={String(stats?.users ?? 0)} />
       </div>
-
-      {isSuperadmin && (
-        <>
-          <h2 className="mt-10 font-display text-xl">{lang === "en" ? "Platform status" : "Xaaladda shabakadda"}</h2>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard icon={Store} label={lang === "en" ? "Bookshops" : "Maktabadaha"} value={String(platform?.bookshops ?? 0)} />
-            <StatCard icon={ShieldCheck} label={lang === "en" ? "Admins" : "Maamulayaal"} value={String((platform?.byRole?.admin ?? 0) + (platform?.byRole?.superadmin ?? 0))} />
-            <StatCard icon={Users} label={lang === "en" ? "Readers" : "Akhristayaal"} value={String(platform?.byRole?.user ?? 0)} />
-            <Link to="/admin/applications" className="rounded-lg border bg-card p-6 transition hover:border-emerald hover:shadow-elegant">
-              <div className="flex items-center gap-3">
-                <div className={`grid size-10 place-items-center rounded-md ${pendingApps > 0 ? "bg-gold/20 text-gold" : "bg-brand/10 text-brand"}`}>
-                  <Inbox className="size-5" />
-                </div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {lang === "en" ? "Pending applications" : "Codsi sugaya"}
-                </div>
-              </div>
-              <div className="mt-4 font-display text-3xl font-semibold">{pendingApps}</div>
-            </Link>
-          </div>
-        </>
-      )}
 
       <div className="mt-10 grid gap-6 lg:grid-cols-3">
         <div className="rounded-lg border bg-card p-6 lg:col-span-2">
@@ -157,13 +138,40 @@ function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <div className="mt-10 rounded-lg border bg-card p-6">
+        <h3 className="flex items-center gap-2 font-display text-xl">
+          <Trophy className="size-5 text-gold" />
+          {lang === "en" ? "Top selling books" : "Buugaagta ugu iibka badan"}
+        </h3>
+        <div className="mt-4 divide-y">
+          {topBooks.length === 0 ? (
+            <p className="py-3 text-sm text-muted-foreground">{lang === "en" ? "No sales yet." : "Weli iib ma jiro."}</p>
+          ) : (
+            topBooks.map((b: any, i: number) => (
+              <div key={b.id} className="flex items-center gap-3 py-3 text-sm">
+                <span className="grid size-6 place-items-center rounded-full bg-muted text-xs font-bold">{i + 1}</span>
+                {b.cover_url && <img src={b.cover_url} alt="" className="h-10 w-8 rounded object-cover" />}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-semibold">{b.title}</div>
+                  <div className="text-xs text-muted-foreground">{b.author}</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold">{money(b.price)}</div>
+                  <div className="text-xs text-muted-foreground">{b.sales_count} sold</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
 function StatCard({ icon: Icon, label, value, accent }: { icon: any; label: string; value: string; accent?: string }) {
   return (
-    <div className="rounded-lg border bg-card p-6">
+    <div className="rounded-lg border bg-card p-6 transition hover:shadow-elegant">
       <div className="flex items-center gap-3">
         <div className={`grid size-10 place-items-center rounded-md ${accent === "emerald" ? "bg-emerald/10 text-emerald" : "bg-brand/10 text-brand"}`}>
           <Icon className="size-5" />

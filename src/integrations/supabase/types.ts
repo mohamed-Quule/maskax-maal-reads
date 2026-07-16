@@ -97,96 +97,6 @@ export type Database = {
           },
         ]
       }
-      bookshop_applications: {
-        Row: {
-          address: string | null
-          city: string | null
-          created_at: string
-          email: string
-          id: string
-          message: string | null
-          name: string
-          owner_full_name: string
-          phone: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          city?: string | null
-          created_at?: string
-          email: string
-          id?: string
-          message?: string | null
-          name: string
-          owner_full_name: string
-          phone: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          city?: string | null
-          created_at?: string
-          email?: string
-          id?: string
-          message?: string | null
-          name?: string
-          owner_full_name?: string
-          phone?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      bookshops: {
-        Row: {
-          address: string | null
-          city: string | null
-          created_at: string
-          id: string
-          is_active: boolean
-          logo_url: string | null
-          name: string
-          owner_user_id: string | null
-          phone: string | null
-          slug: string
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          city?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          logo_url?: string | null
-          name: string
-          owner_user_id?: string | null
-          phone?: string | null
-          slug: string
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          city?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          logo_url?: string | null
-          name?: string
-          owner_user_id?: string | null
-          phone?: string | null
-          slug?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       cart_items: {
         Row: {
           book_id: string
@@ -248,6 +158,45 @@ export type Database = {
           sort_order?: number
         }
         Relationships: []
+      }
+      library: {
+        Row: {
+          book_id: string
+          granted_at: string
+          id: string
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          granted_at?: string
+          id?: string
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          granted_at?: string
+          id?: string
+          order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "library_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "library_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -439,7 +388,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "superadmin" | "bookshop"
+      app_role: "admin" | "user"
       order_status: "pending" | "confirmed" | "cancelled" | "delivered"
       payment_method: "evc_plus" | "zaad" | "sahal"
       payment_status: "pending" | "paid" | "failed" | "refunded"
@@ -570,7 +519,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "superadmin", "bookshop"],
+      app_role: ["admin", "user"],
       order_status: ["pending", "confirmed", "cancelled", "delivered"],
       payment_method: ["evc_plus", "zaad", "sahal"],
       payment_status: ["pending", "paid", "failed", "refunded"],

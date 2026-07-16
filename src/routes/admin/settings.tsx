@@ -12,7 +12,7 @@ import { Settings as SettingsIcon, ShieldCheck, KeyRound, Globe, Palette } from 
 export const Route = createFileRoute("/admin/settings")({ component: AdminSettings });
 
 function AdminSettings() {
-  const { user, isAdmin, isSuperadmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { lang, setLang } = useI18n();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -66,7 +66,7 @@ function AdminSettings() {
             {lang === "en" ? "Manage your account and platform preferences." : "Maamul akoonkaaga iyo doorashada shabakadda."}
           </p>
         </div>
-        {isSuperadmin && <span className="rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald">Superadmin</span>}
+        <span className="rounded-full bg-emerald/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald">Admin</span>
       </div>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -121,7 +121,7 @@ function AdminSettings() {
             <div className="flex justify-between"><span className="text-muted-foreground">{lang === "en" ? "Currency" : "Lacagta"}</span><b>USD ($)</b></div>
             <div className="flex justify-between"><span className="text-muted-foreground">{lang === "en" ? "Payment" : "Lacag bixin"}</span><b>EVC / Zaad / Sahal</b></div>
             <div className="flex justify-between"><span className="text-muted-foreground">{lang === "en" ? "Your role" : "Doorkaaga"}</span>
-              <b className="uppercase">{isSuperadmin ? "Superadmin" : "Admin"}</b>
+              <b className="uppercase">Admin</b>
             </div>
           </div>
         </section>
