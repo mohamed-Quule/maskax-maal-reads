@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Eye, EyeOff, ArrowLeft, MailCheck } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
 
@@ -17,15 +17,18 @@ function AuthPage() {
   const { user } = useAuth();
   const { lang } = useI18n();
   const nav = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [sent, setSent] = useState(false);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) nav({ to: "/" });
   }, [user, nav]);
+
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
