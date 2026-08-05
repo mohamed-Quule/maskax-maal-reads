@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, ShoppingCart, User, LogOut, Search, Shield, Menu, X, Library } from "lucide-react";
+import { ShoppingCart, User, LogOut, Search, Shield, Menu, X, Library } from "lucide-react";
+import logoAsset from "@/assets/maskax-logo.png.asset.json";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -40,9 +41,13 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="grid size-8 place-items-center rounded-md bg-brand text-brand-foreground">
-            <BookOpen className="size-4" />
-          </div>
+          <img
+            src={logoAsset.url}
+            alt="Maskax Maal logo"
+            className="size-9 rounded-md object-contain"
+            width={36}
+            height={36}
+          />
           <span className="font-display text-xl font-semibold tracking-tight text-brand">
             Maskax Maal
           </span>

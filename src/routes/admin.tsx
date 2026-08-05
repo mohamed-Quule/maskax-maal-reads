@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { BookOpen, LayoutDashboard, Library, ShoppingBag, Tag, Users, LogOut, BarChart3, Settings as SettingsIcon, Boxes, UserCircle2 } from "lucide-react";
+import logoAsset from "@/assets/maskax-logo.png.asset.json";
+import { AdminNotifications } from "@/components/admin-notifications";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
@@ -38,12 +40,13 @@ function AdminLayout() {
     <div className="grid min-h-screen bg-background md:grid-cols-[240px_1fr]">
       <aside className="border-r bg-brand text-brand-foreground md:sticky md:top-0 md:h-screen">
         <div className="flex h-16 items-center gap-2 px-5">
-          <div className="grid size-8 place-items-center rounded-md bg-emerald text-emerald-foreground">
-            <BookOpen className="size-4" />
-          </div>
+          <img src={logoAsset.url} alt="Maskax Maal logo" className="size-8 rounded-md object-contain" width={32} height={32} />
           <div>
             <div className="text-sm font-semibold">Maskax Maal</div>
             <div className="text-[10px] uppercase tracking-widest text-white/50">Admin</div>
+          </div>
+          <div className="ml-auto">
+            <AdminNotifications />
           </div>
         </div>
         <nav className="mt-4 space-y-1 px-3 text-sm">
