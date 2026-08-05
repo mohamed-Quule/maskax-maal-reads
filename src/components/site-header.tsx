@@ -40,9 +40,13 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="grid size-8 place-items-center rounded-md bg-brand text-brand-foreground">
-            <BookOpen className="size-4" />
-          </div>
+          <img
+            src={logoAsset.url}
+            alt="Maskax Maal logo"
+            className="size-9 rounded-md object-contain"
+            width={36}
+            height={36}
+          />
           <span className="font-display text-xl font-semibold tracking-tight text-brand">
             Maskax Maal
           </span>
