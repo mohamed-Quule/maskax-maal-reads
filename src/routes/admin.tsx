@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { BookOpen, LayoutDashboard, Library, ShoppingBag, Tag, Users, LogOut, BarChart3, Settings as SettingsIcon, Boxes, UserCircle2 } from "lucide-react";
+import logoAsset from "@/assets/maskax-logo.png.asset.json";
+import { AdminNotifications } from "@/components/admin-notifications";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
