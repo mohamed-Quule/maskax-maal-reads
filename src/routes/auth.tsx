@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { forgotSchema, signInSchema, signUpSchema } from "@/lib/schemas";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -29,13 +32,26 @@ function AuthPage() {
     if (user) nav({ to: "/" });
   }, [user, nav]);
 
+  const schema = useMemo(
+    () => (mode === "forgot" ? forgotSchema(lang) : mode === "signup" ? signUpSchema(lang) : signInSchema(lang)),
+    [mode, lang],
+  );
+  const values = useMemo(() => ({ email, password, fullName }), [email, password, fullName]);
+  const v = useFormValidation(schema, values);
+
+  useEffect(() => {
+    v.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const parsed = v.validateAll() as { email: string; password?: string; fullName?: string } | null;
+    if (!parsed) return;
     setLoading(true);
     try {
       if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabase.auth.resetPasswordForEmail(parsed.email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
@@ -44,17 +60,17 @@ function AuthPage() {
       } else if (mode === "signup") {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: parsed.email,
+          password: parsed.password!,
           options: {
             emailRedirectTo: redirectUrl,
-            data: { full_name: fullName },
+            data: { full_name: parsed.fullName },
           },
         });
         if (error) throw error;
         toast.success(lang === "en" ? "Welcome! You're signed in." : "Soo dhawoow!");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: parsed.email, password: parsed.password! });
         if (error) throw error;
       }
     } catch (err: any) {
@@ -70,6 +86,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
