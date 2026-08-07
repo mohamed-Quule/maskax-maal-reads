@@ -1,16 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { checkoutSchema } from "@/lib/schemas";
+import { placeOrder as placeOrderFn } from "@/lib/validated-writes.functions";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { money } from "@/lib/format";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Smartphone } from "lucide-react";
+
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
@@ -43,38 +49,19 @@ function Checkout() {
 
   const subtotal = items.reduce((s, i: any) => s + Number(i.books?.price ?? 0) * i.quantity, 0);
 
+  const v = useFormValidation(
+    useMemo(() => checkoutSchema(lang), [lang]),
+    useMemo(() => ({ phone, method }), [phone, method]),
+  );
+  const submitOrder = useServerFn(placeOrderFn);
+
   const placeOrder = useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error("Not signed in");
-      if (items.length === 0) throw new Error("Empty cart");
-      if (!phone) throw new Error(lang === "en" ? "Enter your phone" : "Geli lambarkaaga");
-
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          total: subtotal,
-          payment_method: method,
-          phone,
-          status: "pending",
-          payment_status: "pending",
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      const orderItems = items.map((i: any) => ({
-        order_id: order.id,
-        book_id: i.books.id,
-        quantity: i.quantity,
-        unit_price: i.books.price,
-        title: i.books.title,
-      }));
-      const { error: oiErr } = await supabase.from("order_items").insert(orderItems);
-      if (oiErr) throw oiErr;
-
-      await supabase.from("cart_items").delete().eq("user_id", user.id);
-      return order.id;
+      if (items.length === 0) throw new Error(lang === "en" ? "Your cart is empty." : "Gaarigaagu waa madhan yahay.");
+      const parsed = v.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      const res = await submitOrder({ data: { lang, phone: parsed.phone, method: parsed.method } });
+      return res.orderId;
     },
 
     onSuccess: (orderId) => {
@@ -84,6 +71,7 @@ function Checkout() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   if (loading) return <div className="min-h-screen"><SiteHeader /></div>;
   if (!user) {
@@ -126,15 +114,22 @@ function Checkout() {
             </div>
 
             <div className="mt-8 rounded-lg border bg-paper p-6">
-              <label className="mb-2 block text-sm font-semibold">
-                {lang === "en" ? "Mobile money phone number" : "Lambarka moobiylka"}
-              </label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+252 61 000 0000"
-                inputMode="tel"
-              />
+              <FormField
+                label={lang === "en" ? "Mobile money phone number" : "Lambarka moobiylka"}
+                required
+                error={v.errors.phone}
+              >
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s\-()]/g, ""))}
+                  onBlur={() => v.touch("phone")}
+                  placeholder="+252 61 000 0000"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={20}
+                />
+              </FormField>
+
               <p className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald" />
                 {lang === "en"

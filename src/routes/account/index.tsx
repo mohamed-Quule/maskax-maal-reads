@@ -1,17 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { profileSchema } from "@/lib/schemas";
+import { saveProfile as saveProfileFn } from "@/lib/validated-writes.functions";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { money } from "@/lib/format";
-import { User, ShoppingBag, Library as LibraryIcon, Star, BookOpen, Sparkles } from "lucide-react";
+import { User, ShoppingBag, Library as LibraryIcon, BookOpen, Sparkles } from "lucide-react";
+
 
 export const Route = createFileRoute("/account/")({ component: Account });
 
@@ -62,16 +68,25 @@ function Account() {
     }
   }, [profile]);
 
+  const v = useFormValidation(
+    useMemo(() => profileSchema(lang), [lang]),
+    useMemo(() => ({ full_name: name, phone }), [name, phone]),
+  );
+  const persistProfile = useServerFn(saveProfileFn);
+
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("profiles").update({ full_name: name, phone }).eq("id", user!.id);
-      if (error) throw error;
+      const parsed = v.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      await persistProfile({ data: { lang, full_name: parsed.full_name, phone: parsed.phone } });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profile"] });
       toast.success(lang === "en" ? "Profile updated" : "Akoonka waa la cusbooneysiiyay");
     },
+    onError: (e: Error) => toast.error(e.message),
   });
+
 
   if (!user) return null;
 
@@ -154,14 +169,27 @@ function Account() {
                 <Label>{lang === "en" ? "Email" : "Iimayl"}</Label>
                 <Input value={user.email ?? ""} disabled className="mt-1.5" />
               </div>
-              <div>
-                <Label>{lang === "en" ? "Full name" : "Magaca oo dhan"}</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5" />
-              </div>
-              <div>
-                <Label>{lang === "en" ? "Phone" : "Lambar"}</Label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5" placeholder="+252 …" />
-              </div>
+              <FormField label={lang === "en" ? "Full name" : "Magaca oo dhan"} required error={v.errors.full_name}>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={() => v.touch("full_name")}
+                  maxLength={80}
+                  autoComplete="name"
+                />
+              </FormField>
+              <FormField label={lang === "en" ? "Phone" : "Lambar"} error={v.errors.phone}>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s\-()]/g, ""))}
+                  onBlur={() => v.touch("phone")}
+                  placeholder="+252 …"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={20}
+                />
+              </FormField>
+
               <Button onClick={() => save.mutate()} disabled={save.isPending} className="bg-brand hover:bg-brand/90">
                 {lang === "en" ? "Save changes" : "Kaydi"}
               </Button>
