@@ -169,14 +169,27 @@ function Account() {
                 <Label>{lang === "en" ? "Email" : "Iimayl"}</Label>
                 <Input value={user.email ?? ""} disabled className="mt-1.5" />
               </div>
-              <div>
-                <Label>{lang === "en" ? "Full name" : "Magaca oo dhan"}</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5" />
-              </div>
-              <div>
-                <Label>{lang === "en" ? "Phone" : "Lambar"}</Label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5" placeholder="+252 …" />
-              </div>
+              <FormField label={lang === "en" ? "Full name" : "Magaca oo dhan"} required error={v.errors.full_name}>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onBlur={() => v.touch("full_name")}
+                  maxLength={80}
+                  autoComplete="name"
+                />
+              </FormField>
+              <FormField label={lang === "en" ? "Phone" : "Lambar"} error={v.errors.phone}>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s\-()]/g, ""))}
+                  onBlur={() => v.touch("phone")}
+                  placeholder="+252 …"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={20}
+                />
+              </FormField>
+
               <Button onClick={() => save.mutate()} disabled={save.isPending} className="bg-brand hover:bg-brand/90">
                 {lang === "en" ? "Save changes" : "Kaydi"}
               </Button>
