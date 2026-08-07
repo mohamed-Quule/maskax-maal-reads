@@ -1,14 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { newPasswordSchema } from "@/lib/schemas";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
+
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
