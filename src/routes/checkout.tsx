@@ -114,15 +114,22 @@ function Checkout() {
             </div>
 
             <div className="mt-8 rounded-lg border bg-paper p-6">
-              <label className="mb-2 block text-sm font-semibold">
-                {lang === "en" ? "Mobile money phone number" : "Lambarka moobiylka"}
-              </label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+252 61 000 0000"
-                inputMode="tel"
-              />
+              <FormField
+                label={lang === "en" ? "Mobile money phone number" : "Lambarka moobiylka"}
+                required
+                error={v.errors.phone}
+              >
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s\-()]/g, ""))}
+                  onBlur={() => v.touch("phone")}
+                  placeholder="+252 61 000 0000"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  maxLength={20}
+                />
+              </FormField>
+
               <p className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
                 <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald" />
                 {lang === "en"
