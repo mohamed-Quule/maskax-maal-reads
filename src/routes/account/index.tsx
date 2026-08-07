@@ -68,16 +68,25 @@ function Account() {
     }
   }, [profile]);
 
+  const v = useFormValidation(
+    useMemo(() => profileSchema(lang), [lang]),
+    useMemo(() => ({ full_name: name, phone }), [name, phone]),
+  );
+  const persistProfile = useServerFn(saveProfileFn);
+
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("profiles").update({ full_name: name, phone }).eq("id", user!.id);
-      if (error) throw error;
+      const parsed = v.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      await persistProfile({ data: { lang, full_name: parsed.full_name, phone: parsed.phone } });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["profile"] });
       toast.success(lang === "en" ? "Profile updated" : "Akoonka waa la cusbooneysiiyay");
     },
+    onError: (e: Error) => toast.error(e.message),
   });
+
 
   if (!user) return null;
 
