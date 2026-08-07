@@ -80,16 +80,24 @@ function ResetPasswordPage() {
                 : "Fadlan ka fur boggan linkiga aan iimaylka kuugu dirnay."}
             </p>
           ) : (
-            <form onSubmit={submit} className="mt-6 space-y-4">
-              <div>
-                <Label>{lang === "en" ? "New password" : "Furaha cusub"}</Label>
-                <div className="relative mt-1.5">
+            <form onSubmit={submit} noValidate className="mt-6 space-y-4">
+              <FormField
+                label={lang === "en" ? "New password" : "Furaha cusub"}
+                required
+                error={v.errors.password}
+                hint={
+                  lang === "en"
+                    ? "At least 8 characters, with a letter and a number."
+                    : "Ugu yaraan 8 xaraf, oo leh xaraf iyo lambar."
+                }
+              >
+                <div className="relative">
                   <Input
                     type={show ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
+                    onBlur={() => v.touch("password")}
+                    autoComplete="new-password"
                     className="pr-10"
                   />
                   <button
@@ -101,18 +109,17 @@ function ResetPasswordPage() {
                     {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </div>
-              </div>
-              <div>
-                <Label>{lang === "en" ? "Confirm password" : "Xaqiiji furaha"}</Label>
+              </FormField>
+              <FormField label={lang === "en" ? "Confirm password" : "Xaqiiji furaha"} required error={v.errors.confirm}>
                 <Input
                   type={show ? "text" : "password"}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  required
-                  minLength={6}
-                  className="mt-1.5"
+                  onBlur={() => v.touch("confirm")}
+                  autoComplete="new-password"
                 />
-              </div>
+              </FormField>
+
               <Button type="submit" disabled={loading} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
                 {loading ? "…" : lang === "en" ? "Update password" : "Cusboonaysi furaha"}
               </Button>
