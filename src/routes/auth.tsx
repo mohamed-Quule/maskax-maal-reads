@@ -153,21 +153,35 @@ function AuthPage() {
               </p>
             </div>
           ) : (
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} noValidate className="space-y-4">
               {mode === "signup" && (
-                <div>
-                  <Label>{lang === "en" ? "Full name" : "Magaca oo dhan"}</Label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required className="mt-1.5" />
-                </div>
+                <FormField label={lang === "en" ? "Full name" : "Magaca oo dhan"} required error={v.errors.fullName}>
+                  <Input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    onBlur={() => v.touch("fullName")}
+                    autoComplete="name"
+                    maxLength={80}
+                  />
+                </FormField>
               )}
-              <div>
-                <Label>{lang === "en" ? "Email" : "Iimayl"}</Label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="mt-1.5" />
-              </div>
+              <FormField label={lang === "en" ? "Email" : "Iimayl"} required error={v.errors.email}>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => v.touch("email")}
+                  autoComplete="email"
+                  maxLength={254}
+                />
+              </FormField>
               {mode !== "forgot" && (
                 <div>
                   <div className="flex items-center justify-between">
-                    <Label>{lang === "en" ? "Password" : "Furaha sirta"}</Label>
+                    <Label className={v.errors.password ? "text-destructive" : ""}>
+                      {lang === "en" ? "Password" : "Furaha sirta"}
+                      <span className="ml-0.5 text-destructive">*</span>
+                    </Label>
                     {mode === "signin" && (
                       <button
                         type="button"
@@ -178,26 +192,39 @@ function AuthPage() {
                       </button>
                     )}
                   </div>
-                  <div className="relative mt-1.5">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((s) => !s)}
-                      aria-label={showPassword ? (lang === "en" ? "Hide password" : "Qari furaha") : (lang === "en" ? "Show password" : "Muuji furaha")}
-                      className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
+                  <FormField
+                    error={v.errors.password}
+                    className="mt-1.5"
+                    hint={
+                      mode === "signup"
+                        ? lang === "en"
+                          ? "At least 8 characters, with a letter and a number."
+                          : "Ugu yaraan 8 xaraf, oo leh xaraf iyo lambar."
+                        : undefined
+                    }
+                  >
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onBlur={() => v.touch("password")}
+                        autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((s) => !s)}
+                        aria-label={showPassword ? (lang === "en" ? "Hide password" : "Qari furaha") : (lang === "en" ? "Show password" : "Muuji furaha")}
+                        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                  </FormField>
                 </div>
               )}
+
               <Button type="submit" disabled={loading} className="w-full bg-brand text-brand-foreground hover:bg-brand/90">
                 {loading
                   ? "…"
