@@ -1,13 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { changePasswordSchema, profileSchema } from "@/lib/schemas";
+import { saveProfile as saveProfileFn } from "@/lib/validated-writes.functions";
 import { toast } from "sonner";
-import { UserCircle2, KeyRound } from "lucide-react";
+import { UserCircle2, KeyRound, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin/profile")({ component: AdminProfile });
 
@@ -17,6 +22,8 @@ function AdminProfile() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -28,20 +35,39 @@ function AdminProfile() {
     });
   }, [user]);
 
+  const pv = useFormValidation(
+    useMemo(() => profileSchema(lang), [lang]),
+    useMemo(() => ({ full_name: fullName, phone }), [fullName, phone]),
+  );
+  const wv = useFormValidation(
+    useMemo(() => changePasswordSchema(lang), [lang]),
+    useMemo(() => ({ password: newPassword }), [newPassword]),
+  );
+  const persistProfile = useServerFn(saveProfileFn);
+
   const saveProfile = async () => {
-    if (!user) return;
-    const { error } = await supabase.from("profiles").update({ full_name: fullName, phone }).eq("id", user.id);
-    if (error) toast.error(error.message);
-    else toast.success(lang === "en" ? "Profile saved" : "Akoonka waa la kaydiyay");
+    const parsed = pv.validateAll();
+    if (!parsed) return;
+    setSaving(true);
+    try {
+      await persistProfile({ data: { lang, full_name: parsed.full_name, phone: parsed.phone } });
+      toast.success(lang === "en" ? "Profile saved" : "Akoonka waa la kaydiyay");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const changePassword = async () => {
-    if (newPassword.length < 8) return toast.error(lang === "en" ? "Password must be at least 8 characters" : "Furaha ha ka yaraanin 8 xaraf");
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const parsed = wv.validateAll();
+    if (!parsed) return;
+    const { error } = await supabase.auth.updateUser({ password: parsed.password });
     if (error) toast.error(error.message);
     else {
       toast.success(lang === "en" ? "Password updated" : "Furaha waa la beddelay");
       setNewPassword("");
+      wv.reset();
     }
   };
 
@@ -62,15 +88,25 @@ function AdminProfile() {
               <Label>Email</Label>
               <Input value={user?.email ?? ""} disabled className="mt-1.5" />
             </div>
-            <div>
-              <Label>{lang === "en" ? "Full name" : "Magaca"}</Label>
-              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1.5" />
-            </div>
-            <div>
-              <Label>{lang === "en" ? "Phone" : "Telefoon"}</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5" />
-            </div>
-            <Button onClick={saveProfile} className="bg-brand text-brand-foreground hover:bg-brand/90">
+            <FormField label={lang === "en" ? "Full name" : "Magaca"} required error={pv.errors.full_name}>
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                onBlur={() => pv.touch("full_name")}
+                maxLength={80}
+              />
+            </FormField>
+            <FormField label={lang === "en" ? "Phone" : "Telefoon"} error={pv.errors.phone}>
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s\-()]/g, ""))}
+                onBlur={() => pv.touch("phone")}
+                inputMode="tel"
+                placeholder="+252 …"
+                maxLength={20}
+              />
+            </FormField>
+            <Button onClick={saveProfile} disabled={saving} className="bg-brand text-brand-foreground hover:bg-brand/90">
               {lang === "en" ? "Save" : "Kaydi"}
             </Button>
           </div>
@@ -81,10 +117,35 @@ function AdminProfile() {
             <KeyRound className="size-4" /> {lang === "en" ? "Change password" : "Beddel furaha"}
           </h3>
           <div className="mt-4 space-y-4">
-            <div>
-              <Label>{lang === "en" ? "New password" : "Furaha cusub"}</Label>
-              <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1.5" minLength={8} />
-            </div>
+            <FormField
+              label={lang === "en" ? "New password" : "Furaha cusub"}
+              required
+              error={wv.errors.password}
+              hint={
+                lang === "en"
+                  ? "At least 8 characters, with a letter and a number."
+                  : "Ugu yaraan 8 xaraf, oo leh xaraf iyo lambar."
+              }
+            >
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  onBlur={() => wv.touch("password")}
+                  autoComplete="new-password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </FormField>
             <Button onClick={changePassword} className="bg-brand text-brand-foreground hover:bg-brand/90">
               {lang === "en" ? "Update password" : "Cusboonaysi"}
             </Button>
