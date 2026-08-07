@@ -209,11 +209,18 @@ function AdminCats() {
         <div className="h-fit rounded-lg border bg-card p-6">
           <h3 className="font-display text-xl">Add category</h3>
           <div className="mt-4 space-y-3">
-            <Input placeholder="Slug (auto)" value={slug} onChange={(e) => setSlug(e.target.value)} />
-            <Input placeholder="English name" value={en} onChange={(e) => setEn(e.target.value)} />
-            <Input placeholder="Somali name" value={so} onChange={(e) => setSo(e.target.value)} />
-            <Button onClick={() => add.mutate()} disabled={!en || !so || add.isPending} className="w-full bg-brand hover:bg-brand/90">Add</Button>
+            <FormField label="Slug (auto)" error={addV.errors.slug}>
+              <Input placeholder="e.g. somali-classics" value={slug} onChange={(e) => setSlug(e.target.value)} onBlur={() => addV.touch("slug")} />
+            </FormField>
+            <FormField label="English name" required error={addV.errors.name_en}>
+              <Input value={en} onChange={(e) => setEn(e.target.value)} onBlur={() => addV.touch("name_en")} maxLength={60} />
+            </FormField>
+            <FormField label="Somali name" required error={addV.errors.name_so}>
+              <Input value={so} onChange={(e) => setSo(e.target.value)} onBlur={() => addV.touch("name_so")} maxLength={60} />
+            </FormField>
+            <Button onClick={() => add.mutate()} disabled={add.isPending} className="w-full bg-brand hover:bg-brand/90">Add</Button>
           </div>
+
         </div>
       </div>
     </div>
