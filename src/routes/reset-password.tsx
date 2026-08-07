@@ -46,21 +46,21 @@ function ResetPasswordPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  const schema = useMemo(() => newPasswordSchema(lang), [lang]);
+  const v = useFormValidation(schema, useMemo(() => ({ password, confirm }), [password, confirm]));
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      return toast.error(lang === "en" ? "Password must be at least 6 characters" : "Furaha ha ka yaraanin 6 xaraf");
-    }
-    if (password !== confirm) {
-      return toast.error(lang === "en" ? "Passwords do not match" : "Furayaashu isma laha");
-    }
+    const parsed = v.validateAll();
+    if (!parsed) return;
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await supabase.auth.updateUser({ password: parsed.password });
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success(lang === "en" ? "Password updated" : "Furaha waa la beddelay");
     nav({ to: "/" });
   };
+
 
   return (
     <div className="min-h-screen bg-background">
