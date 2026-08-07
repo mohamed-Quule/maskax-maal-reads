@@ -261,23 +261,26 @@ function Meta({ label, value }: { label: string; value: string }) {
 }
 
 function ReviewForm({ bookId }: { bookId: string }) {
-  const { user } = useAuth();
   const { lang } = useI18n();
   const [rating, setRating] = useState(5);
   const [body, setBody] = useState("");
   const qc = useQueryClient();
+  const v = useFormValidation(
+    useMemo(() => reviewSchema(lang), [lang]),
+    useMemo(() => ({ rating, comment: body }), [rating, body]),
+  );
+  const postReview = useServerFn(submitReview);
   const m = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("reviews").upsert(
-        { book_id: bookId, user_id: user!.id, rating, comment: body || null } as any,
-        { onConflict: "book_id,user_id" }
-      );
-      if (error) throw error;
+      const parsed = v.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      await postReview({ data: { lang, bookId, rating: parsed.rating, comment: parsed.comment } });
     },
 
     onSuccess: () => {
       toast.success(lang === "en" ? "Thanks for your review!" : "Mahadsanid ra'yigaaga!");
       setBody("");
+      v.reset();
       qc.invalidateQueries({ queryKey: ["reviews"] });
       qc.invalidateQueries({ queryKey: ["book"] });
     },
@@ -293,15 +296,20 @@ function ReviewForm({ bookId }: { bookId: string }) {
           </button>
         ))}
       </div>
-      <Textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={lang === "en" ? "Share your thoughts…" : "La wadaag fikradahaaga…"}
-        rows={3}
-      />
+      <FormField error={v.errors.comment ?? v.errors.rating}>
+        <Textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          onBlur={() => v.touch("comment")}
+          maxLength={1000}
+          placeholder={lang === "en" ? "Share your thoughts…" : "La wadaag fikradahaaga…"}
+          rows={3}
+        />
+      </FormField>
       <Button onClick={() => m.mutate()} disabled={m.isPending} className="mt-3 bg-brand hover:bg-brand/90">
         {lang === "en" ? "Post review" : "Dir ra'yiga"}
       </Button>
     </div>
   );
 }
+
