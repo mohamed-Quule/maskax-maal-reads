@@ -49,38 +49,19 @@ function Checkout() {
 
   const subtotal = items.reduce((s, i: any) => s + Number(i.books?.price ?? 0) * i.quantity, 0);
 
+  const v = useFormValidation(
+    useMemo(() => checkoutSchema(lang), [lang]),
+    useMemo(() => ({ phone, method }), [phone, method]),
+  );
+  const submitOrder = useServerFn(placeOrderFn);
+
   const placeOrder = useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error("Not signed in");
-      if (items.length === 0) throw new Error("Empty cart");
-      if (!phone) throw new Error(lang === "en" ? "Enter your phone" : "Geli lambarkaaga");
-
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          total: subtotal,
-          payment_method: method,
-          phone,
-          status: "pending",
-          payment_status: "pending",
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      const orderItems = items.map((i: any) => ({
-        order_id: order.id,
-        book_id: i.books.id,
-        quantity: i.quantity,
-        unit_price: i.books.price,
-        title: i.books.title,
-      }));
-      const { error: oiErr } = await supabase.from("order_items").insert(orderItems);
-      if (oiErr) throw oiErr;
-
-      await supabase.from("cart_items").delete().eq("user_id", user.id);
-      return order.id;
+      if (items.length === 0) throw new Error(lang === "en" ? "Your cart is empty." : "Gaarigaagu waa madhan yahay.");
+      const parsed = v.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      const res = await submitOrder({ data: { lang, phone: parsed.phone, method: parsed.method } });
+      return res.orderId;
     },
 
     onSuccess: (orderId) => {
@@ -90,6 +71,7 @@ function Checkout() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   if (loading) return <div className="min-h-screen"><SiteHeader /></div>;
   if (!user) {
