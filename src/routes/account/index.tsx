@@ -1,17 +1,23 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { profileSchema } from "@/lib/schemas";
+import { saveProfile as saveProfileFn } from "@/lib/validated-writes.functions";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { money } from "@/lib/format";
-import { User, ShoppingBag, Library as LibraryIcon, Star, BookOpen, Sparkles } from "lucide-react";
+import { User, ShoppingBag, Library as LibraryIcon, BookOpen, Sparkles } from "lucide-react";
+
 
 export const Route = createFileRoute("/account/")({ component: Account });
 
