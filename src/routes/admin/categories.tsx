@@ -117,34 +117,51 @@ function AdminCats() {
                 const isEditing = editingId === c.id;
                 return (
                   <tr key={c.id}>
-                    <td className="p-3 w-20">
+                    <td className="p-3 w-24 align-top">
                       {isEditing ? (
-                        <Input type="number" value={eSort} onChange={(e) => setESort(Number(e.target.value))} className="h-8" />
+                        <FormField error={editV.errors.sort_order}>
+                          <Input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={eSort}
+                            onChange={(e) => setESort(Number(e.target.value))}
+                            onBlur={() => editV.touch("sort_order")}
+                            className="h-8"
+                          />
+                        </FormField>
                       ) : (
                         <span className="font-mono text-xs">{c.sort_order ?? 0}</span>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 align-top">
                       {isEditing ? (
-                        <Input value={eSlug} onChange={(e) => setESlug(e.target.value)} className="h-8" />
+                        <FormField error={editV.errors.slug}>
+                          <Input value={eSlug} onChange={(e) => setESlug(e.target.value)} onBlur={() => editV.touch("slug")} className="h-8" />
+                        </FormField>
                       ) : (
                         <span className="font-mono text-xs">{c.slug}</span>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 align-top">
                       {isEditing ? (
-                        <Input value={eEn} onChange={(e) => setEEn(e.target.value)} className="h-8" />
+                        <FormField error={editV.errors.name_en}>
+                          <Input value={eEn} onChange={(e) => setEEn(e.target.value)} onBlur={() => editV.touch("name_en")} className="h-8" maxLength={60} />
+                        </FormField>
                       ) : (
                         c.name_en
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 align-top">
                       {isEditing ? (
-                        <Input value={eSo} onChange={(e) => setESo(e.target.value)} className="h-8" />
+                        <FormField error={editV.errors.name_so}>
+                          <Input value={eSo} onChange={(e) => setESo(e.target.value)} onBlur={() => editV.touch("name_so")} className="h-8" maxLength={60} />
+                        </FormField>
                       ) : (
                         c.name_so
                       )}
                     </td>
+
                     <td className="p-3 text-right">
                       {isEditing ? (
                         <div className="inline-flex gap-1">
