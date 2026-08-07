@@ -9,10 +9,15 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { money, shortDate } from "@/lib/format";
 import { ShoppingCart, Star, BookOpen, ChevronLeft, Download } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { getBookReadUrl, getBookDownloadUrl, getFreeBookUrl } from "@/lib/library.functions";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { reviewSchema } from "@/lib/schemas";
+import { submitReview } from "@/lib/validated-writes.functions";
+
 
 
 export const Route = createFileRoute("/books/$slug")({ component: BookDetail });
