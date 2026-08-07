@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/form-field";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { categorySchema } from "@/lib/schemas";
+import { saveCategory } from "@/lib/validated-writes.functions";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { Trash2, Pencil, X, Check } from "lucide-react";
 
@@ -11,6 +17,7 @@ export const Route = createFileRoute("/admin/categories")({ component: AdminCats
 
 function AdminCats() {
   const qc = useQueryClient();
+  const { lang } = useI18n();
   const [slug, setSlug] = useState("");
   const [en, setEn] = useState("");
   const [so, setSo] = useState("");
@@ -21,6 +28,20 @@ function AdminCats() {
   const [eSo, setESo] = useState("");
   const [eSort, setESort] = useState<number>(0);
 
+  const schema = useMemo(() => categorySchema(lang), [lang]);
+  const addV = useFormValidation(
+    schema,
+    useMemo(() => ({ slug, name_en: en, name_so: so, sort_order: 0 }), [slug, en, so]),
+  );
+  const editV = useFormValidation(
+    schema,
+    useMemo(
+      () => ({ id: editingId ?? undefined, slug: eSlug, name_en: eEn, name_so: eSo, sort_order: eSort }),
+      [editingId, eSlug, eEn, eSo, eSort],
+    ),
+  );
+  const persistCategory = useServerFn(saveCategory);
+
   const { data: cats = [] } = useQuery({
     queryKey: ["admin-cats"],
     queryFn: async () => (await supabase.from("categories").select("*").order("sort_order")).data ?? [],
@@ -28,15 +49,13 @@ function AdminCats() {
 
   const add = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("categories").insert({
-        slug: slug || en.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        name_en: en,
-        name_so: so,
-      });
-      if (error) throw error;
+      const parsed = addV.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      await persistCategory({ data: { lang, category: parsed } });
     },
     onSuccess: () => {
       setSlug(""); setEn(""); setSo("");
+      addV.reset();
       qc.invalidateQueries({ queryKey: ["admin-cats"] });
       toast.success("Added");
     },
@@ -46,14 +65,13 @@ function AdminCats() {
   const update = useMutation({
     mutationFn: async () => {
       if (!editingId) return;
-      const { error } = await supabase
-        .from("categories")
-        .update({ slug: eSlug, name_en: eEn, name_so: eSo, sort_order: eSort })
-        .eq("id", editingId);
-      if (error) throw error;
+      const parsed = editV.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadaysan.");
+      await persistCategory({ data: { lang, category: { ...parsed, id: editingId } } });
     },
     onSuccess: () => {
       setEditingId(null);
+      editV.reset();
       qc.invalidateQueries({ queryKey: ["admin-cats"] });
       toast.success("Updated");
     },
@@ -75,7 +93,9 @@ function AdminCats() {
     setEEn(c.name_en);
     setESo(c.name_so);
     setESort(c.sort_order ?? 0);
+    editV.reset();
   };
+
 
   return (
     <div className="p-8">
