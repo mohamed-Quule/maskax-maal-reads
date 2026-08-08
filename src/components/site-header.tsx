@@ -60,6 +60,21 @@ export function SiteHeader() {
           <Link to="/categories" className={`text-sm font-medium transition-colors hover:text-emerald ${isActive("/categories") ? "text-foreground" : "text-muted-foreground"}`}>
             {t("nav_categories")}
           </Link>
+          {user && (
+            <>
+              <Link to="/account/library" className={`text-sm font-medium transition-colors hover:text-emerald ${isActive("/account/library") ? "text-foreground" : "text-muted-foreground"}`}>
+                {lang === "en" ? "My library" : "Maktabaddayda"}
+              </Link>
+              <Link to="/account/orders" className={`text-sm font-medium transition-colors hover:text-emerald ${isActive("/account/orders") ? "text-foreground" : "text-muted-foreground"}`}>
+                {t("nav_orders")}
+              </Link>
+            </>
+          )}
+          {isAdmin && (
+            <Link to="/admin" className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-emerald ${path.startsWith("/admin") ? "text-foreground" : "text-muted-foreground"}`}>
+              <Shield className="size-3.5" /> {t("nav_admin")}
+            </Link>
+          )}
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -149,6 +164,16 @@ export function SiteHeader() {
           <div className="mx-auto max-w-7xl space-y-1 px-4 py-3">
             <Link to="/books" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">{t("nav_library")}</Link>
             <Link to="/categories" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">{t("nav_categories")}</Link>
+            {user && (
+              <>
+                <div className="my-2 border-t" />
+                <Link to="/account/library" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">{lang === "en" ? "My library" : "Maktabaddayda"}</Link>
+                <Link to="/account/orders" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm hover:bg-muted">{t("nav_orders")}</Link>
+                {isAdmin && (
+                  <Link to="/admin" onClick={() => setMobileOpen(false)} className="block rounded px-3 py-2 text-sm font-semibold text-emerald hover:bg-muted">{t("nav_admin")}</Link>
+                )}
+              </>
+            )}
             {!user && (
               <>
                 <div className="my-2 border-t" />

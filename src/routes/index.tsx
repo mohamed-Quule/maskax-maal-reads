@@ -6,12 +6,14 @@ import { SiteFooter } from "@/components/site-footer";
 import { BookCard, type BookCardData } from "@/components/book-card";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { ArrowRight, BookOpen, Download, Sparkles, Star } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { ArrowRight, BookOpen, Download, Sparkles, Star, Library, ShoppingBag, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: HomePage });
 
 function HomePage() {
   const { t, lang } = useI18n();
+  const { user, isAdmin } = useAuth();
 
   const { data: featured = [] } = useQuery({
     queryKey: ["home-featured"],
@@ -108,6 +110,35 @@ function HomePage() {
         </div>
       </section>
 
+      {/* QUICK ACCESS */}
+      {user && (
+        <section className="mx-auto max-w-7xl px-6 pt-12">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <QuickLink
+              to="/account/library"
+              icon={Library}
+              title={lang === "en" ? "My Library" : "Maktabaddayda"}
+              sub={lang === "en" ? "Read & download your books" : "Akhri oo soo dejiso buugaagtaada"}
+            />
+            <QuickLink
+              to="/account/orders"
+              icon={ShoppingBag}
+              title={lang === "en" ? "My Orders" : "Dalabyadayda"}
+              sub={lang === "en" ? "Track your purchases" : "La soco wax iibsigaaga"}
+            />
+            {isAdmin && (
+              <QuickLink
+                to="/admin"
+                icon={Shield}
+                title={lang === "en" ? "Admin Dashboard" : "Dashboarka Maamulka"}
+                sub={lang === "en" ? "Books, orders, users & reports" : "Buugaag, dalabyo, isticmaalayaal"}
+                accent
+              />
+            )}
+          </div>
+        </section>
+      )}
+
       {/* BEST SELLERS */}
       <section className="mx-auto max-w-7xl px-6 py-20">
         <SectionHeader title={t("section_bestsellers")} sub={t("section_bestsellers_sub")} to="/books" />
@@ -195,6 +226,26 @@ function HomePage() {
 
       <SiteFooter />
     </div>
+  );
+}
+
+function QuickLink({
+  to, icon: Icon, title, sub, accent,
+}: { to: string; icon: any; title: string; sub: string; accent?: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={`group flex items-center gap-4 rounded-lg border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-card ${accent ? "border-emerald/40" : "hover:border-emerald"}`}
+    >
+      <span className={`grid size-11 shrink-0 place-items-center rounded-md ${accent ? "bg-emerald/10 text-emerald" : "bg-brand/10 text-brand"}`}>
+        <Icon className="size-5" />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-display text-lg leading-tight">{title}</span>
+        <span className="block truncate text-xs text-muted-foreground">{sub}</span>
+      </span>
+      <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+    </Link>
   );
 }
 

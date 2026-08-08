@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,11 @@ import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Upload, Loader2 } from "lucide-react";
 import { money } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
+import { useServerFn } from "@tanstack/react-start";
+import { saveBook } from "@/lib/validated-writes.functions";
+import { bookSchema, validateUpload } from "@/lib/schemas";
+import { useFormValidation } from "@/hooks/use-form-validation";
+import { FormField } from "@/components/form-field";
 
 export const Route = createFileRoute("/admin/books")({ component: AdminBooks });
 
@@ -70,7 +75,13 @@ function AdminBooks() {
     queryFn: async () => (await supabase.from("categories").select("*").order("sort_order")).data ?? [],
   });
 
+  const schema = useMemo(() => bookSchema(lang), [lang]);
+  const v = useFormValidation(schema, form);
+  const err = v.errors as Record<string, string | undefined>;
+
   const uploadCover = async (file: File) => {
+    const bad = validateUpload("cover", file, lang);
+    if (bad) { toast.error(bad); return; }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
@@ -93,6 +104,8 @@ function AdminBooks() {
   };
 
   const uploadPdf = async (file: File) => {
+    const bad = validateUpload("pdf", file, lang);
+    if (bad) { toast.error(bad); return; }
     setUploadingPdf(true);
     try {
       const ext = file.name.split(".").pop() ?? "pdf";
@@ -112,37 +125,18 @@ function AdminBooks() {
     }
   };
 
+  const saveBookFn = useServerFn(saveBook);
   const save = useMutation({
     mutationFn: async () => {
-      const payload = {
-        slug: form.slug || form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        title: form.title,
-        author: form.author,
-        language: form.language,
-        price: Number(form.price),
-        stock: Number(form.stock),
-        category_id: form.category_id || null,
-        cover_url: form.cover_url || null,
-        cover_type: form.cover_type,
-        pdf_path: form.pdf_path || null,
-        is_free: form.is_free,
-        description_en: form.description_en || null,
-        description_so: form.description_so || null,
-        is_featured: form.is_featured,
-        is_editor_pick: form.is_editor_pick,
-      };
-      if (form.id) {
-        const { error } = await supabase.from("books").update(payload).eq("id", form.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("books").insert(payload);
-        if (error) throw error;
-      }
+      const parsed = v.validateAll();
+      if (!parsed) throw new Error(lang === "en" ? "Please fix the highlighted fields." : "Fadlan hagaaji goobaha calaamadsan.");
+      await saveBookFn({ data: { lang, book: form as unknown as Record<string, unknown> } });
     },
     onSuccess: () => {
       toast.success("Saved");
       setOpen(false);
       setForm(empty);
+      v.reset();
       qc.invalidateQueries({ queryKey: ["admin-books"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -194,7 +188,7 @@ function AdminBooks() {
             ))}
           </div>
           <Input placeholder={lang === "en" ? "Search…" : "Raadi…"} value={q} onChange={(e) => setQ(e.target.value)} className="w-56" />
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setForm(empty); }}>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setForm(empty); v.reset(); } }}>
             <DialogTrigger asChild>
               <Button className="bg-brand hover:bg-brand/90"><Plus className="mr-1 size-4" /> {lang === "en" ? "New book" : "Buug cusub"}</Button>
             </DialogTrigger>
@@ -236,8 +230,17 @@ function AdminBooks() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
-                  <Field label="Author"><Input value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} /></Field>
+                  <FormField label="Title" required error={err.title}>
+                    <Input value={form.title} {...v.blurProps("title")} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                  </FormField>
+                  <FormField label="Author" required error={err.author}>
+                    <Input
+                      value={form.author}
+                      {...v.blurProps("author")}
+                      onChange={(e) => setForm({ ...form, author: e.target.value.replace(/[0-9]/g, "") })}
+                      placeholder="Ahmed Ali"
+                    />
+                  </FormField>
                   <Field label="Slug"><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="auto" /></Field>
                   <Field label={lang === "en" ? "Cover type" : "Nooca jaldi"}>
                     <div className="inline-flex w-full rounded-md border p-0.5">
@@ -256,18 +259,22 @@ function AdminBooks() {
                       <option value="ar">Arabic</option>
                     </select>
                   </Field>
-                  <Field label="Price ($)"><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
-                  <Field label="Stock"><Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} /></Field>
-                  <Field label="Category">
-                    <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="w-full rounded-md border bg-background px-3 py-2 text-sm">
+                  <FormField label="Price ($)" required error={err.price}>
+                    <Input inputMode="decimal" value={form.price} {...v.blurProps("price")} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+                  </FormField>
+                  <FormField label="Stock" required error={err.stock}>
+                    <Input inputMode="numeric" value={form.stock} {...v.blurProps("stock")} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+                  </FormField>
+                  <FormField label="Category" required error={err.category_id}>
+                    <select value={form.category_id} {...v.blurProps("category_id")} onChange={(e) => setForm({ ...form, category_id: e.target.value })} className="w-full rounded-md border bg-background px-3 py-2 text-sm">
                       <option value="">—</option>
                       {cats.map((c: any) => <option key={c.id} value={c.id}>{c.name_en}</option>)}
                     </select>
-                  </Field>
+                  </FormField>
                   <div className="sm:col-span-2">
-                    <Field label="Cover URL (or upload above)">
-                      <Input value={form.cover_url} onChange={(e) => setForm({ ...form, cover_url: e.target.value })} />
-                    </Field>
+                    <FormField label="Cover URL (or upload above)" error={err.cover_url}>
+                      <Input value={form.cover_url} {...v.blurProps("cover_url")} onChange={(e) => setForm({ ...form, cover_url: e.target.value })} />
+                    </FormField>
                   </div>
                   <div className="sm:col-span-2">
                     <Field label="Description (EN)">
@@ -319,7 +326,7 @@ function AdminBooks() {
 
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={() => save.mutate()} disabled={save.isPending} className="bg-brand hover:bg-brand/90">Save</Button>
+                <Button onClick={() => save.mutate()} disabled={save.isPending || (v.submitted && !v.isValid)} className="bg-brand hover:bg-brand/90">Save</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
