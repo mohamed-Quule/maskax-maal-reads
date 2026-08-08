@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  authorNameSchema,
   bookTitleSchema,
   categoryNameSchema,
   emailSchema,
@@ -55,7 +56,7 @@ export const bookSchema = (lang: Lang) =>
   z.object({
     id: z.string().uuid().optional(),
     title: bookTitleSchema(lang),
-    author: nameSchema(lang, { min: 2, max: 100 }),
+    author: authorNameSchema(lang),
     slug: slugSchema(lang),
     language: z.enum(["so", "en", "ar"]),
     price: priceSchema(lang),
@@ -101,6 +102,20 @@ export function parseOrThrow<T extends z.ZodTypeAny>(schema: T, data: unknown): 
     throw new Error(first ? `${String(first.path[0] ?? "input")}: ${first.message}` : "Invalid input");
   }
   return r.data;
+}
+
+/** Client + server file guard for uploads. */
+export const FILE_RULES = {
+  cover: { types: ["image/jpeg", "image/png", "image/webp", "image/avif"], maxMB: 5 },
+  pdf: { types: ["application/pdf"], maxMB: 50 },
+} as const;
+
+export function validateUpload(kind: keyof typeof FILE_RULES, file: File, lang: Lang) {
+  const rule = FILE_RULES[kind];
+  if (!(rule.types as readonly string[]).includes(file.type)) return messages.file(lang);
+  if (file.size > rule.maxMB * 1024 * 1024)
+    return `${messages.fileSize(lang)} (max ${rule.maxMB}MB)`;
+  return null;
 }
 
 export const toSlug = (v: string) =>
