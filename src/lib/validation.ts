@@ -27,7 +27,30 @@ export const messages = {
   textLong: (lang: Lang) => t(lang, "This text is too long.", "Qoraalkani aad buu u dheer yahay."),
   rating: (lang: Lang) => t(lang, "Please select a rating from 1 to 5.", "Fadlan dooro qiimayn 1 ilaa 5."),
   url: (lang: Lang) => t(lang, "Please enter a valid URL.", "Fadlan geli URL sax ah."),
+  authorLetters: (lang: Lang) =>
+    t(lang, "Author name must contain letters and spaces only.", "Magaca qoraagu waa inuu ka koobnaadaa xarfo iyo meelo bannaan oo keliya."),
+  category: (lang: Lang) => t(lang, "Please select a category.", "Fadlan dooro qayb."),
+  bookType: (lang: Lang) => t(lang, "Please select a valid book type.", "Fadlan dooro nooc buug sax ah."),
+  file: (lang: Lang) => t(lang, "Please upload a supported book file.", "Fadlan soo geli fayl buug oo la taageero."),
+  fileSize: (lang: Lang) => t(lang, "File is too large.", "Faylku aad buu u weyn yahay."),
 };
+
+/** Author names: letters, spaces, apostrophes, hyphens and dots — never digits. */
+export const AUTHOR_RE = /^[\p{L}\p{M}][\p{L}\p{M}'’.\- ]*$/u;
+
+export const authorNameSchema = (lang: Lang) =>
+  z
+    .string({ required_error: messages.required(lang) })
+    .transform((v) => sanitizeText(v ?? ""))
+    .pipe(
+      z
+        .string()
+        .min(1, messages.required(lang))
+        .min(2, messages.nameShort(lang))
+        .max(100, messages.nameLong(lang))
+        .regex(AUTHOR_RE, messages.authorLetters(lang))
+        .refine((v) => !/\d/.test(v), messages.authorLetters(lang)),
+    );
 
 /* ---------------------------------- regex --------------------------------- */
 
