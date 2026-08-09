@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/form-field";
 import { useFormValidation } from "@/hooks/use-form-validation";
-import { profileSchema } from "@/lib/schemas";
+import { profileSchema, changePasswordSchema } from "@/lib/schemas";
 import { saveProfile as saveProfileFn } from "@/lib/validated-writes.functions";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { money } from "@/lib/format";
-import { User, ShoppingBag, Library as LibraryIcon, BookOpen, Sparkles } from "lucide-react";
+import { User, ShoppingBag, Library as LibraryIcon, BookOpen, Sparkles, KeyRound, Eye, EyeOff } from "lucide-react";
 
 
 export const Route = createFileRoute("/account/")({ component: Account });
@@ -86,6 +86,25 @@ function Account() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const [newPassword, setNewPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const pw = useFormValidation(
+    useMemo(() => changePasswordSchema(lang), [lang]),
+    useMemo(() => ({ password: newPassword }), [newPassword]),
+  );
+  const changePassword = async () => {
+    const parsed = pw.validateAll();
+    if (!parsed) return;
+    const { error } = await supabase.auth.updateUser({ password: parsed.password });
+    if (error) toast.error(error.message);
+    else {
+      toast.success(lang === "en" ? "Password updated" : "Furaha waa la beddelay");
+      setNewPassword("");
+      pw.reset();
+    }
+  };
+
 
 
   if (!user) return null;
