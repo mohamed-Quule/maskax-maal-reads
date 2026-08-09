@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField } from "@/components/form-field";
 import { useFormValidation } from "@/hooks/use-form-validation";
-import { profileSchema } from "@/lib/schemas";
+import { profileSchema, changePasswordSchema } from "@/lib/schemas";
 import { saveProfile as saveProfileFn } from "@/lib/validated-writes.functions";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { money } from "@/lib/format";
-import { User, ShoppingBag, Library as LibraryIcon, BookOpen, Sparkles } from "lucide-react";
+import { User, ShoppingBag, Library as LibraryIcon, BookOpen, Sparkles, KeyRound, Eye, EyeOff } from "lucide-react";
 
 
 export const Route = createFileRoute("/account/")({ component: Account });
@@ -86,6 +86,25 @@ function Account() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const [newPassword, setNewPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const pw = useFormValidation(
+    useMemo(() => changePasswordSchema(lang), [lang]),
+    useMemo(() => ({ password: newPassword }), [newPassword]),
+  );
+  const changePassword = async () => {
+    const parsed = pw.validateAll();
+    if (!parsed) return;
+    const { error } = await supabase.auth.updateUser({ password: parsed.password });
+    if (error) toast.error(error.message);
+    else {
+      toast.success(lang === "en" ? "Password updated" : "Furaha waa la beddelay");
+      setNewPassword("");
+      pw.reset();
+    }
+  };
+
 
 
   if (!user) return null;
@@ -192,6 +211,36 @@ function Account() {
 
               <Button onClick={() => save.mutate()} disabled={save.isPending} className="bg-brand hover:bg-brand/90">
                 {lang === "en" ? "Save changes" : "Kaydi"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-lg border bg-card p-6">
+            <h2 className="flex items-center gap-2 font-display text-xl">
+              <KeyRound className="size-4" /> {lang === "en" ? "Change password" : "Beddel furaha"}
+            </h2>
+            <div className="mt-4 max-w-lg space-y-4">
+              <FormField label={lang === "en" ? "New password" : "Furaha cusub"} required error={pw.errors.password}>
+                <div className="relative">
+                  <Input
+                    type={showPw ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    onBlur={() => pw.touch("password")}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                  >
+                    {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </FormField>
+              <Button variant="outline" onClick={changePassword}>
+                {lang === "en" ? "Update password" : "Cusbooneysii furaha"}
               </Button>
             </div>
           </div>

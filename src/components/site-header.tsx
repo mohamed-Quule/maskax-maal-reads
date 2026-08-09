@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingCart, User, LogOut, Search, Shield, Menu, X, Library } from "lucide-react";
+import { ShoppingCart, User, LogOut, Search, Shield, Menu, X } from "lucide-react";
 import logoAsset from "@/assets/maskax-logo.png.asset.json";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
@@ -111,27 +111,19 @@ export function SiteHeader() {
                   <User className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate">
+              <DropdownMenuContent align="end" sideOffset={8} className="w-60 rounded-xl p-1.5 shadow-elegant">
+                <DropdownMenuLabel className="truncate px-2 py-1.5 text-xs font-normal text-muted-foreground">
                   {user.email}
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem asChild className="cursor-pointer rounded-lg px-2 py-2 text-sm">
                   <Link to="/account"><User className="mr-2 size-4" />{t("nav_account")}</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/account/library"><Library className="mr-2 size-4" />{lang === "en" ? "My library" : "Maktabaddayda"}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/account/orders"><ShoppingCart className="mr-2 size-4" />{t("nav_orders")}</Link>
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin"><Shield className="mr-2 size-4" />{t("nav_admin")}</Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuSeparator className="my-1" />
+                <DropdownMenuItem
+                  onClick={signOut}
+                  className="cursor-pointer rounded-lg px-2 py-2 text-sm text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
                   <LogOut className="mr-2 size-4" />{t("nav_signout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
