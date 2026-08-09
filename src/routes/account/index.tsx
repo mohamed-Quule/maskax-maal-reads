@@ -195,6 +195,36 @@ function Account() {
               </Button>
             </div>
           </div>
+
+          <div className="mt-8 rounded-lg border bg-card p-6">
+            <h2 className="flex items-center gap-2 font-display text-xl">
+              <KeyRound className="size-4" /> {lang === "en" ? "Change password" : "Beddel furaha"}
+            </h2>
+            <div className="mt-4 max-w-lg space-y-4">
+              <FormField label={lang === "en" ? "New password" : "Furaha cusub"} required error={pw.errors.password}>
+                <div className="relative">
+                  <Input
+                    type={showPw ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    onBlur={() => pw.touch("password")}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
+                  >
+                    {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </FormField>
+              <Button variant="outline" onClick={changePassword}>
+                {lang === "en" ? "Update password" : "Cusbooneysii furaha"}
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
       <SiteFooter />

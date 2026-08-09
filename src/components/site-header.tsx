@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingCart, User, LogOut, Search, Shield, Menu, X, Library } from "lucide-react";
+import { ShoppingCart, User, LogOut, Search, Shield, Menu, X } from "lucide-react";
 import logoAsset from "@/assets/maskax-logo.png.asset.json";
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
