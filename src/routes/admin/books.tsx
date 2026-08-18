@@ -238,7 +238,7 @@ function AdminBooks() {
                       value={form.author}
                       {...v.blurProps("author")}
                       onChange={(e) => setForm({ ...form, author: e.target.value.replace(/[0-9]/g, "") })}
-                      placeholder="Ahmed Ali"
+                      placeholder="Text"
                     />
                   </FormField>
                   <Field label="Slug"><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="auto" /></Field>
