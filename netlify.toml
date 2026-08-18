@@ -1,0 +1,18 @@
+# Netlify deployment config for Maskax Maal Platform
+# Build is produced by TanStack Start + nitro (netlify preset).
+# nitro generates the serverless function under .netlify/functions-internal
+# and emits the catch-all redirect that routes requests through SSR.
+
+[build]
+  command = "bun run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Runtime env vars the server functions need (set these in Netlify UI too):
+  #   SUPABASE_URL
+  #   SUPABASE_PUBLISHABLE_KEY
+  #   SUPABASE_SERVICE_ROLE_KEY
+
+# nitro's netlify preset handles the catch-all -> function redirect,
+# so no manual [[redirects]] are required.
